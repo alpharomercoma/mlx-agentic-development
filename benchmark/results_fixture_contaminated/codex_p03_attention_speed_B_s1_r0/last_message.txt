@@ -1,0 +1,3 @@
+Implemented the fused MLX attention path in [solution.py](/private/tmp/mlx-bench-workspaces/codex_p03_attention_speed_B_s1_r0/workspace/solution.py).
+
+It retains the reference scale and lower-right causal mask while avoiding materialized score/mask/weight tensors. Syntax validation passed.

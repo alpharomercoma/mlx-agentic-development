@@ -1,0 +1,33 @@
+{
+  "task_id": "p05_kernel_rowsum",
+  "harness": "codex",
+  "arm": "D",
+  "repeat": 0,
+  "model": "gpt-5.6-terra",
+  "web_search": true,
+  "ok": true,
+  "timed_out": false,
+  "graded": false,
+  "passed": false,
+  "tests_passed": 2,
+  "tests_total": 9,
+  "wall_clock_s": 94.76,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 227659,
+    "cached_input_tokens": 205824,
+    "cache_write_tokens": 0,
+    "output_tokens": 4271,
+    "reasoning_tokens": 2134,
+    "total_tokens": 231930,
+    "model_calls": 12,
+    "turns": 1,
+    "tool_calls": 11,
+    "cost_usd": null,
+    "skills_invoked": [
+      "mlx-docs"
+    ]
+  },
+  "rate_limited": false,
+  "error": null
+}

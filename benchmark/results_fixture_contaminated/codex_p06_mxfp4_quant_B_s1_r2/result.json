@@ -1,0 +1,42 @@
+{
+  "task_id": "p06_mxfp4_quant",
+  "harness": "codex",
+  "arm": "B",
+  "repeat": 2,
+  "model": "gpt-5.6-terra",
+  "web_search": true,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 4,
+  "tests_total": 4,
+  "wall_clock_s": 76.15,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 390323,
+    "cached_input_tokens": 337664,
+    "cache_write_tokens": 0,
+    "output_tokens": 2410,
+    "reasoning_tokens": 747,
+    "total_tokens": 392733,
+    "model_calls": 13,
+    "turns": 1,
+    "tool_calls": 12,
+    "cost_usd": null,
+    "skills_invoked": [
+      "pg-replication-workflows",
+      "pg-performance",
+      "pg-env-setup",
+      "pg-query-semantics",
+      "pg-extensions",
+      "pg-profiling",
+      "pg-partitioning",
+      "pg-planner-and-indexes",
+      "mlx-metal-kernels",
+      "mlx-performance"
+    ]
+  },
+  "rate_limited": false,
+  "error": null
+}

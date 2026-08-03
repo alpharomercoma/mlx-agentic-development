@@ -1,0 +1,33 @@
+{
+  "task_id": "p06_mxfp4_quant",
+  "harness": "codex",
+  "arm": "A",
+  "repeat": 3,
+  "model": "gpt-5.6-terra",
+  "web_search": true,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 4,
+  "tests_total": 4,
+  "wall_clock_s": 56.22,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 271718,
+    "cached_input_tokens": 247040,
+    "cache_write_tokens": 0,
+    "output_tokens": 2054,
+    "reasoning_tokens": 455,
+    "total_tokens": 273772,
+    "model_calls": 11,
+    "turns": 1,
+    "tool_calls": 10,
+    "cost_usd": null,
+    "skills_invoked": [
+      "neuron-nki-docs"
+    ]
+  },
+  "rate_limited": false,
+  "error": null
+}

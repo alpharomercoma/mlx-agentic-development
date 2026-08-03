@@ -1,0 +1,3 @@
+Created [solution.py](/private/tmp/mlx-bench-workspaces/codex_p01_metal_kernel_fused_D_s1_r3/workspace/solution.py).
+
+It defines `fused_scale_bias` using a module-level MLX custom Metal kernel, preserving `x`’s shape and dtype. Syntax was checked; this environment does not have MLX installed for runtime execution.

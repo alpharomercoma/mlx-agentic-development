@@ -44,7 +44,13 @@ KIT_PREFIX = "mlx-agentic-development"
 # nested inside the repo hands the kit to EVERY arm, including the bare control, and
 # silently destroys the experiment. This was observed in the first pilot: all three
 # arms read skills/mlx-*/SKILL.md by absolute path.
-WORKSPACE_ROOT = Path("/private/tmp/mlx-bench-workspaces")
+# Nested one level deeper than /private/tmp on purpose. Agents explore their
+# surroundings: in the first 250-run sweep, ten runs found leftover TEST FIXTURES
+# sitting beside the workspaces in /private/tmp -- including directories holding the
+# gold solutions -- and seven read them. Two arm-A runs of p01 passed a task the bare
+# model otherwise never passes. Isolation is now structural, and preflight_clean()
+# refuses to start if fixture-shaped directories are anywhere near.
+WORKSPACE_ROOT = Path("/private/tmp/mlx-bench/workspaces")
 
 
 @dataclass
@@ -77,6 +83,31 @@ def load_task(task_id: str) -> tuple[dict, str, Path, Path]:
     meta = json.loads((tdir / "meta.json").read_text())
     prompt = (tdir / "prompt.md").read_text()
     return meta, prompt, tdir / "workspace", tdir / "test_solution.py"
+
+
+# Names that mean "someone left an oracle, a cheat, or a spare kit lying around".
+FIXTURE_MARKERS = ("oracle", "cheat", "kit", "placebo", "solution", "gold")
+
+
+def preflight_clean(root: Path = WORKSPACE_ROOT) -> list[Path]:
+    """Refuse to run if fixture-shaped directories sit near the workspaces.
+
+    Agents explore. The first 250-run sweep lost ten runs to leftover test fixtures
+    in /private/tmp -- among them directories holding the gold solutions, which two
+    arm-A runs read before passing a task the bare model never passes. Cleaning up by
+    hand is not a control; this is.
+    """
+    parent = root.parent
+    if not parent.is_dir():
+        return []
+    offenders = []
+    for entry in parent.iterdir():
+        if entry == root or not entry.is_dir():
+            continue
+        name = entry.name.lower()
+        if any(m in name for m in FIXTURE_MARKERS):
+            offenders.append(entry)
+    return offenders
 
 
 def assert_outside_repo(task_dir: Path) -> None:

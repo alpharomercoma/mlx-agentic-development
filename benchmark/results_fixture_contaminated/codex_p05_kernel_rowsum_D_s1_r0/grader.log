@@ -1,0 +1,53 @@
+FFFFFF.F.
+=================================== FAILURES ===================================
+________________________ test_matches_reference[shape0] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py:21: in test_matches_reference
+    assert err / scale < 1e-4, f"max rel err {err / scale:.2e} for shape {shape}"
+E   AssertionError: max rel err 1.00e+00 for shape (4, 8)
+E   assert (4.425252437591553 / 4.425253437591553) < 0.0001
+________________________ test_matches_reference[shape1] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py:21: in test_matches_reference
+    assert err / scale < 1e-4, f"max rel err {err / scale:.2e} for shape {shape}"
+E   AssertionError: max rel err 1.00e+00 for shape (16, 256)
+E   assert (29.68585205078125 / 29.68585305078125) < 0.0001
+________________________ test_matches_reference[shape2] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py:21: in test_matches_reference
+    assert err / scale < 1e-4, f"max rel err {err / scale:.2e} for shape {shape}"
+E   AssertionError: max rel err 9.33e-01 for shape (3, 1000)
+E   assert (21.37908363342285 / 22.914588020874024) < 0.0001
+________________________ test_matches_reference[shape3] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py:21: in test_matches_reference
+    assert err / scale < 1e-4, f"max rel err {err / scale:.2e} for shape {shape}"
+E   AssertionError: max rel err 1.00e+00 for shape (7, 33)
+E   assert (8.902090072631836 / 8.902091072631835) < 0.0001
+________________________ test_matches_reference[shape4] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py:21: in test_matches_reference
+    assert err / scale < 1e-4, f"max rel err {err / scale:.2e} for shape {shape}"
+E   AssertionError: max rel err 1.00e+00 for shape (64, 1)
+E   assert (2.714938163757324 / 2.7149391637573244) < 0.0001
+________________________ test_matches_reference[shape5] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py:21: in test_matches_reference
+    assert err / scale < 1e-4, f"max rel err {err / scale:.2e} for shape {shape}"
+E   AssertionError: max rel err 6.77e-01 for shape (2, 4097)
+E   assert (16.313068389892578 / 24.103173302246095) < 0.0001
+____________________________ test_zeros_give_zeros _____________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py:45: in test_zeros_give_zeros
+    assert mx.max(mx.abs(got)).item() < 1e-6, f"expected zeros, got max {mx.max(mx.abs(got)).item():.3e}"
+E   AssertionError: expected zeros, got max 2.969e+01
+E   assert 29.68585205078125 < 1e-06
+E    +  where 29.68585205078125 = <nanobind.nb_bound_method object at 0x10b1c7080>()
+E    +    where <nanobind.nb_bound_method object at 0x10b1c7080> = array(29.6859, dtype=float32).item
+E    +      where array(29.6859, dtype=float32) = <nanobind.nb_func object at 0x10b1e7560>(array([0, 29.419, 3.89513, ..., 15.0092, 7.89361, 9.14424], dtype=float32))
+E    +        where <nanobind.nb_func object at 0x10b1e7560> = mx.max
+E    +        and   array([0, 29.419, 3.89513, ..., 15.0092, 7.89361, 9.14424], dtype=float32) = <nanobind.nb_func object at 0x10b1dcd00>(array([0, 29.419, 3.89513, ..., 15.0092, 7.89361, 9.14424], dtype=float32))
+E    +          where <nanobind.nb_func object at 0x10b1dcd00> = mx.abs
+=========================== short test summary info ============================
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py::test_matches_reference[shape0]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py::test_matches_reference[shape1]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py::test_matches_reference[shape2]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py::test_matches_reference[shape3]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py::test_matches_reference[shape4]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py::test_matches_reference[shape5]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p05_kernel_rowsum_D_s1_r0/grader/test_solution.py::test_zeros_give_zeros
+7 failed, 2 passed in 0.47s
+

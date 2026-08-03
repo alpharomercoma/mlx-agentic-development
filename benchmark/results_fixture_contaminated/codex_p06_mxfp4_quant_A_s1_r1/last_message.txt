@@ -1,0 +1,5 @@
+Implemented [solution.py](/private/tmp/mlx-bench-workspaces/codex_p06_mxfp4_quant_A_s1_r1/workspace/solution.py).
+
+- `pack_mxfp4(w)` uses MLX native `mxfp4` defaults.
+- `matmul_mxfp4(x, packed)` uses quantized `x @ w.T` and returns float32.
+- Syntax validation passed; MLX is not installed in this workspace to run a numerical check.

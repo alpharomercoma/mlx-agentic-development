@@ -1,0 +1,42 @@
+{
+  "task_id": "p03_attention_speed",
+  "harness": "codex",
+  "arm": "B",
+  "repeat": 0,
+  "model": "gpt-5.6-terra",
+  "web_search": true,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 6,
+  "tests_total": 6,
+  "wall_clock_s": 62.93,
+  "speedup": 3.319,
+  "metrics": {
+    "input_tokens": 208499,
+    "cached_input_tokens": 184320,
+    "cache_write_tokens": 0,
+    "output_tokens": 2321,
+    "reasoning_tokens": 487,
+    "total_tokens": 210820,
+    "model_calls": 12,
+    "turns": 1,
+    "tool_calls": 11,
+    "cost_usd": null,
+    "skills_invoked": [
+      "pg-replication-workflows",
+      "pg-performance",
+      "pg-env-setup",
+      "pg-query-semantics",
+      "pg-extensions",
+      "pg-profiling",
+      "pg-partitioning",
+      "pg-planner-and-indexes",
+      "mlx-metal-kernels",
+      "mlx-performance"
+    ]
+  },
+  "rate_limited": false,
+  "error": null
+}

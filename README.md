@@ -15,12 +15,15 @@ better on unfamiliar accelerator hardware. Neither tested that claim. This repos
 does, against both Codex and Claude Code, with a placebo arm, a leakage audit, and
 metrics fixed in advance.
 
-See [`benchmark/PREREGISTRATION.md`](benchmark/PREREGISTRATION.md) and
+See [`RESULTS.md`](RESULTS.md),
+[`benchmark/PREREGISTRATION.md`](benchmark/PREREGISTRATION.md) and
 [`benchmark/MINING.md`](benchmark/MINING.md).
 
-**Status: no scored result exists.** Every run executed so far has been discarded —
-first for control-arm contamination, then because the kit itself carried nine dangling
-reference pointers. The sweep restarts against the repaired kit.
+**Result: null.** 250 runs, 5 arms, 44M tokens. **No pre-registered contrast reached
+significance.** The sharpest finding is that the full 8-skill kit and a flat 40-line
+cheat sheet containing the same facts performed identically — a 3,582-token difference,
+p = 0.69 — with the kit loading on 50 of 50 runs. On this task set, with this model,
+**the facts did the work and the format did not.** See [`RESULTS.md`](RESULTS.md).
 
 **What the baseline does show:** bare Codex on ten MLX tasks passed **9/10**, with
 token cost varying **8×** and correlating with web-search count at **r = 0.993**. With

@@ -24,7 +24,7 @@ import sys
 import time
 from pathlib import Path
 
-from run import REPO, run_trial
+from run import REPO, preflight_clean, run_trial
 
 RESULTS = REPO / "benchmark" / "results"
 
@@ -82,6 +82,17 @@ def main() -> int:
     )
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
+
+    offenders = preflight_clean()
+    if offenders:
+        print(
+            "REFUSING TO RUN: fixture-shaped directories sit beside the workspace "
+            "root, and agents will find them:",
+            file=sys.stderr,
+        )
+        for o in offenders:
+            print(f"  {o}", file=sys.stderr)
+        return 3
 
     searches = [s == "on" for s in args.search]
     cells = build_cells(
