@@ -1,0 +1,8 @@
+{
+  "id": "p07_memory_api",
+  "area": "performance",
+  "tier": "api-currency",
+  "provenance": "authored",
+  "timeout_s": 900,
+  "rationale": "API currency. The mx.metal.* memory and device functions moved to top level in recent MLX and now print a deprecation notice. Training data overwhelmingly contains the mx.metal.* spelling. The notice is printed to stderr from C++, not raised through Python warnings, so it is invisible to warnings.catch_warnings."
+}

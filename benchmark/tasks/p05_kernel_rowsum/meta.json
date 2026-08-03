@@ -1,0 +1,8 @@
+{
+  "id": "p05_kernel_rowsum",
+  "area": "metal-kernels",
+  "tier": "authoring-hard",
+  "provenance": "authored",
+  "timeout_s": 1500,
+  "rationale": "Reduction kernel. Traps: metal_kernel outputs are uninitialised unless init_value is given, so an accumulating kernel reads garbage; atomic accumulation needs atomic_outputs=True and atomic_fetch_add_explicit; grid is in threads."
+}

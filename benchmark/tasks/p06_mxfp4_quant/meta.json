@@ -1,0 +1,8 @@
+{
+  "id": "p06_mxfp4_quant",
+  "area": "quantization",
+  "tier": "authoring-hard",
+  "provenance": "authored",
+  "timeout_s": 1200,
+  "rationale": "Non-affine quantization mode. mx.quantize returns THREE values for affine but only TWO for mxfp4/mxfp8/nvfp4 (no biases), and each mode has different default group_size and bits. Code written for affine unpacks three values and raises."
+}
