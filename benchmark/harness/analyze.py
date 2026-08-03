@@ -64,6 +64,11 @@ def load_runs(results: Path) -> list[dict]:
             continue
         if "web_search" not in d:
             continue
+        # Recomputed, not trusted: an earlier version keyed `graded` on the pytest
+        # exit code, so it read False for every run with a failing test. Deriving it
+        # from tests_total makes runs recorded before and after that fix consistent
+        # without re-running anything.
+        d["graded"] = d.get("tests_total", 0) > 0
         runs.append(d)
     return runs
 
@@ -305,6 +310,21 @@ def main() -> int:
         if "C" in arms and "A" in arms:
             pr = paired_metric(by, tasks, "C", "A", search, fn, True)
             report_contrast(f"C - A {label}", pr, areas, alpha_head)
+
+    print("\nEXECUTION ERRORS vs WRONG ANSWERS (pre-registered as separate)")
+    for a in arms:
+        rs = [
+            r for r in runs if r["arm"] == a and bool(r.get("web_search", True)) == search
+        ]
+        if not rs:
+            continue
+        crashed = sum(1 for r in rs if not r["graded"])
+        wrong = sum(1 for r in rs if r["graded"] and not r["passed"])
+        ok = sum(1 for r in rs if r["passed"])
+        print(
+            f"  arm {a}: {ok} passed, {wrong} wrong answers, "
+            f"{crashed} produced nothing gradable"
+        )
 
     print("\nPER-ARM SUMMARY")
     for a in arms:

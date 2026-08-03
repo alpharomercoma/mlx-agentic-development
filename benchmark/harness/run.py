@@ -230,7 +230,12 @@ def grade(
             if m := re.search(r"(\d+) failed", line):
                 failed = int(m.group(1))
     total = passed + failed
-    return proc.returncode == 0 and total > 0, passed, total
+    # `graded` means the grader RAN and produced a verdict -- not that everything
+    # passed. Keying it on returncode conflated "the agent produced nothing and the
+    # grader crashed" with "the code was wrong", and the pre-registration requires
+    # counting execution errors separately from wrong answers. `passed` already
+    # carries the outcome.
+    return total > 0, passed, total
 
 
 def parse_speedup(out_dir: Path) -> float | None:
