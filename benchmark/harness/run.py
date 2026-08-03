@@ -54,6 +54,7 @@ class TrialResult:
     tests_passed: int
     tests_total: int
     wall_clock_s: float
+    speedup: float | None
     metrics: dict
     rate_limited: bool
     error: str | None = None
@@ -183,6 +184,9 @@ def grade(
             "--tb=short",
             "-p",
             "no:cacheprovider",
+            # -s so tasks can print machine-readable metrics (SPEEDUP_METRIC);
+            # pytest captures stdout by default and the speedup would be lost.
+            "-s",
         ],
         capture_output=True,
         text=True,
@@ -203,6 +207,17 @@ def grade(
                 failed = int(m.group(1))
     total = passed + failed
     return proc.returncode == 0 and total > 0, passed, total
+
+
+def parse_speedup(out_dir: Path) -> float | None:
+    """Read the SPEEDUP_METRIC line a performance task prints, if any."""
+    log = out_dir / "grader.log"
+    if not log.is_file():
+        return None
+    import re as _re
+
+    m = _re.search(r"SPEEDUP_METRIC .*?speedup=([0-9.]+)", log.read_text())
+    return float(m.group(1)) if m else None
 
 
 def run_trial(
@@ -270,6 +285,7 @@ def run_trial(
         tests_passed=tp,
         tests_total=tt,
         wall_clock_s=round(wall, 2),
+        speedup=parse_speedup(out_dir),
         metrics=metrics.as_dict(),
         rate_limited=rate_limited,
         error=err,
