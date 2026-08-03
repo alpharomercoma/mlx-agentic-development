@@ -1,0 +1,10 @@
+{
+  "id": "p09_rope_offsets",
+  "area": "fast-ops",
+  "tier": "api-currency",
+  "provenance": "authored",
+  "timeout_s": 1200,
+  "rationale": "mx.fast.rope accepts an ARRAY offset for per-sequence positions, added in MLX 0.30.0. Older knowledge only has the integer offset, forcing a per-sequence Python loop. Both are correct; only one is a single fused call.",
+  "discriminates_on": "efficiency",
+  "note": "The grader's reference is a per-batch loop, so a looping solution passes on correctness. This task discriminates on whether the model knows the array-offset API, which shows up as tokens and search count, not pass rate."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "p08_compile_state",
+  "area": "compile",
+  "tier": "semantics-hard",
+  "provenance": "authored",
+  "timeout_s": 1200,
+  "rationale": "mx.compile freezes anything not passed as an argument at trace time. Mutating captured state afterwards is silently ignored -- no error, stale results. Requires @partial(mx.compile, inputs=state, outputs=state). Also needs mx.random.state in the captured state when randomness is involved."
+}

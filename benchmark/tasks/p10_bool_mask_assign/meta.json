@@ -1,0 +1,8 @@
+{
+  "id": "p10_bool_mask_assign",
+  "area": "core-semantics",
+  "tier": "semantics-hard",
+  "provenance": "authored",
+  "timeout_s": 1200,
+  "rationale": "MLX does not bounds-check indexing: out-of-range indices are undefined behaviour returning garbage rather than raising, because exceptions cannot propagate from the GPU. A solution that assumes an IndexError, or that relies on numpy-style negative wrapping only, reads memory it does not own."
+}
