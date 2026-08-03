@@ -63,7 +63,7 @@ def build_cells(tasks, arms, searches, repeats, harness, seed):
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tasks", nargs="+", required=True)
-    ap.add_argument("--arms", nargs="+", default=["A", "B", "C"])
+    ap.add_argument("--arms", nargs="+", default=["A", "B", "C", "D", "E"])
     ap.add_argument("--search", nargs="+", default=["on"], choices=["on", "off"])
     ap.add_argument("--repeats", type=int, default=5)
     ap.add_argument("--harness", default="codex", choices=["codex", "claude"])
@@ -72,6 +72,8 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=20260804)
     ap.add_argument("--kit", type=Path, default=REPO)
     ap.add_argument("--placebo", type=Path, default=REPO / "benchmark" / "placebo-kit")
+    ap.add_argument("--docs", type=Path, default=REPO / "benchmark" / "docs-kit")
+    ap.add_argument("--facts", type=Path, default=REPO / "benchmark" / "facts-kit")
     ap.add_argument(
         "--quota-stop",
         type=float,
@@ -119,6 +121,8 @@ def main() -> int:
                 c["repeat"],
                 kit=args.kit.resolve(),
                 placebo=args.placebo.resolve(),
+                docs=args.docs.resolve(),
+                facts=args.facts.resolve(),
                 results_root=RESULTS,
                 model=args.model,
                 effort=args.effort,

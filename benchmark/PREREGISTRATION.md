@@ -216,3 +216,32 @@ nothing interpretable.
 7. **C−D favours C**, because raw docs are long and unrouted — but by less than C−A.
 8. C−A remains large on the high-search tasks and is reported as an upper bound on
    memorisation-substitution, never as assistance.
+
+## Amendment 1b — arm D and E catalog sizes, measured
+
+Injected prompt, measured with `codex debug prompt-input` on 2026-08-04:
+
+| Arm | Content | Injected | Δ vs bare |
+|---|---|---|---|
+| A | bare | 9,181 | — |
+| B | placebo, 8 skills | 13,446 | +4,265 |
+| C | kit, 8 skills | 13,619 | +4,438 |
+| D | raw docs, 1 skill | 10,250 | +1,069 |
+| E | bare facts, 1 skill | 10,265 | +1,084 |
+
+**C−E is confounded with catalog size** and this is stated rather than hidden: C
+ships eight catalog entries, E ships one, so C injects ~3.4 KB more before any skill
+is loaded. Splitting E into eight entries would impose the very structure E exists to
+remove, so the confound is accepted rather than engineered away. C−E should therefore
+be read as "eight routed skills versus one flat file", which *is* a format difference,
+not as a pure content comparison.
+
+**D−E is the clean contrast, and it was not planned.** The two differ by **15
+characters** of injected catalog — 1,069 against 1,084 — and by delivery mechanism not
+at all. Both are a single skill with a single catalog entry. What differs is only
+what is written inside: upstream docstrings concatenated, versus curated facts.
+
+D−E therefore isolates content quality with catalog length held near-exactly
+constant, and it is added as a pre-specified contrast. If D ≈ E, then curation of the
+*text* adds nothing over raw documentation of the same material, which would be the
+most deflationary result this experiment can produce and is worth being able to state.

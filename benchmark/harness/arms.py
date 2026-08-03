@@ -121,12 +121,32 @@ class Arm:
     kit_path: Path | None  # None for the bare arm
 
 
-def build_arms(kit: Path, placebo: Path) -> dict[str, Arm]:
-    return {
+def build_arms(
+    kit: Path,
+    placebo: Path,
+    docs: Path | None = None,
+    facts: Path | None = None,
+) -> dict[str, Arm]:
+    """Five arms. Every one is delivered the same way, so only content varies.
+
+    D and E exist because the corrected leakage audit found all 10 tasks in-kit.
+    Once the kit states every answer, C-A and C-B measure how much cheaper it is to
+    be told than to search -- real, but not "the kit makes the agent better".
+
+    C-E holds the FACTS constant and removes the structure, so leakage cancels and
+    what remains is whatever the skill format contributes. C-D holds the material
+    constant and removes the curation. Those two are the contrasts that survive.
+    """
+    arms = {
         "A": Arm("A", "bare", None),
         "B": Arm("B", "placebo", placebo),
         "C": Arm("C", "kit", kit),
     }
+    if docs is not None:
+        arms["D"] = Arm("D", "raw-docs", docs)
+    if facts is not None:
+        arms["E"] = Arm("E", "bare-facts", facts)
+    return arms
 
 
 def prepare_codex_home(arm: Arm, root: Path, auth_source: Path) -> Path:

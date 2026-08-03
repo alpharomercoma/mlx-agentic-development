@@ -253,6 +253,8 @@ def run_trial(
     kit: Path,
     placebo: Path,
     results_root: Path,
+    docs: Path | None = None,
+    facts: Path | None = None,
     model: str,
     effort: str = "medium",
     venv_py: Path = DEFAULT_VENV_PY,
@@ -261,7 +263,7 @@ def run_trial(
 ) -> TrialResult:
     meta, prompt, ws_src, test_file = load_task(task_id)
     timeout = int(meta.get("timeout_s", 900))
-    arm = build_arms(kit, placebo)[arm_id]
+    arm = build_arms(kit, placebo, docs, facts)[arm_id]
 
     run_id = f"{harness}_{task_id}_{arm_id}_s{int(web_search)}_r{repeat}"
     out_dir = results_root / "runs" / run_id
@@ -333,13 +335,15 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--task", required=True)
     ap.add_argument("--harness", default="codex", choices=("codex", "claude"))
-    ap.add_argument("--arm", default="A", choices=("A", "B", "C"))
+    ap.add_argument("--arm", default="A", choices=("A", "B", "C", "D", "E"))
     ap.add_argument("--repeat", type=int, default=0)
     ap.add_argument("--model", default="gpt-5.6-terra")
     ap.add_argument("--effort", default="medium")
     ap.add_argument("--no-web-search", action="store_true")
     ap.add_argument("--kit", type=Path, default=REPO)
-    ap.add_argument("--placebo", type=Path, default=REPO)
+    ap.add_argument("--placebo", type=Path, default=REPO / "benchmark" / "placebo-kit")
+    ap.add_argument("--docs", type=Path, default=REPO / "benchmark" / "docs-kit")
+    ap.add_argument("--facts", type=Path, default=REPO / "benchmark" / "facts-kit")
     ap.add_argument("--results", type=Path, default=REPO / "benchmark" / "results")
     ap.add_argument("--venv-python", type=Path, default=DEFAULT_VENV_PY)
     args = ap.parse_args()
@@ -351,6 +355,8 @@ def main() -> int:
         args.repeat,
         kit=args.kit,
         placebo=args.placebo,
+        docs=args.docs,
+        facts=args.facts,
         results_root=args.results,
         model=args.model,
         effort=args.effort,
