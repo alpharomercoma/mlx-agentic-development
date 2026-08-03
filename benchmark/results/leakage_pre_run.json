@@ -1,0 +1,86 @@
+{
+  "ngram": 13,
+  "kit_files_scanned": 10,
+  "tasks": [
+    {
+      "task": "p01_metal_kernel_fused",
+      "shared_13grams": 4,
+      "longest_common_run": 15,
+      "max_similarity": 0.245,
+      "closest_kit_file": "skills/mlx-metal-kernels/SKILL.md",
+      "stratum": "in-kit"
+    },
+    {
+      "task": "p02_train_step_grads",
+      "shared_13grams": 27,
+      "longest_common_run": 27,
+      "max_similarity": 0.071,
+      "closest_kit_file": "skills/mlx-compile-and-transforms/SKILL.md",
+      "stratum": "in-kit"
+    },
+    {
+      "task": "p03_attention_speed",
+      "shared_13grams": 0,
+      "longest_common_run": 6,
+      "max_similarity": 0.392,
+      "closest_kit_file": "skills/mlx-profiling/SKILL.md",
+      "stratum": "novel"
+    },
+    {
+      "task": "p04_quantized_matmul",
+      "shared_13grams": 4,
+      "longest_common_run": 15,
+      "max_similarity": 0.051,
+      "closest_kit_file": "skills/mlx-quantization/SKILL.md",
+      "stratum": "in-kit"
+    },
+    {
+      "task": "p05_kernel_rowsum",
+      "shared_13grams": 5,
+      "longest_common_run": 17,
+      "max_similarity": 0.049,
+      "closest_kit_file": "skills/mlx-metal-kernels/SKILL.md",
+      "stratum": "in-kit"
+    },
+    {
+      "task": "p06_mxfp4_quant",
+      "shared_13grams": 0,
+      "longest_common_run": 6,
+      "max_similarity": 0.244,
+      "closest_kit_file": "skills/mlx-profiling/SKILL.md",
+      "stratum": "novel"
+    },
+    {
+      "task": "p07_memory_api",
+      "shared_13grams": 0,
+      "longest_common_run": 6,
+      "max_similarity": 0.321,
+      "closest_kit_file": "skills/mlx-profiling/SKILL.md",
+      "stratum": "novel"
+    },
+    {
+      "task": "p08_compile_state",
+      "shared_13grams": 16,
+      "longest_common_run": 22,
+      "max_similarity": 0.139,
+      "closest_kit_file": "skills/mlx-compile-and-transforms/SKILL.md",
+      "stratum": "in-kit"
+    },
+    {
+      "task": "p09_rope_offsets",
+      "shared_13grams": 0,
+      "longest_common_run": 6,
+      "max_similarity": 0.383,
+      "closest_kit_file": "skills/mlx-profiling/SKILL.md",
+      "stratum": "novel"
+    },
+    {
+      "task": "p10_bool_mask_assign",
+      "shared_13grams": 0,
+      "longest_common_run": 6,
+      "max_similarity": 0.21,
+      "closest_kit_file": "skills/mlx-profiling/SKILL.md",
+      "stratum": "novel"
+    }
+  ]
+}
