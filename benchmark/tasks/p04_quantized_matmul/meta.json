@@ -1,0 +1,8 @@
+{
+  "id": "p04_quantized_matmul",
+  "area": "quantization",
+  "tier": "authoring",
+  "provenance": "authored",
+  "timeout_s": 1200,
+  "rationale": "MLX quantization API. Traps: quantize returns three values for affine mode but two for mxfp4/mxfp8/nvfp4; quantized_matmul defaults to transpose=True; group_size must divide the last dimension; bits/group_size defaults differ per mode."
+}
