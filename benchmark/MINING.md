@@ -65,3 +65,61 @@ idiomatic usage.
 
 Both tasks are retained as **ceiling controls**. A kit that makes a passing task fail
 is a regression, and the experiment should be able to see that.
+
+## Round 2 -- harder candidates, same configuration
+
+| Task | Area | Result | Tokens | Web searches | Wall |
+|---|---|---|---|---|---|
+| `p05_kernel_rowsum` | metal-kernels | pass 9/9 | 240,738 | 2 | 86 s |
+| `p06_mxfp4_quant` | quantization | pass 4/4 | 426,944 | 5 | 79 s |
+| `p07_memory_api` | api-currency | pass 3/3 | 535,522 | 7 | 90 s |
+
+`p05` was meant to force atomics and `init_value`. The model avoided the trap by
+picking a better algorithm: a threadgroup shared-memory tree reduction writing
+`out[row]` once from lane 0, which never accumulates and so never needs an
+initialised buffer. That is a legitimately good solution, not a lucky escape.
+
+`p07` produced the exactly-correct six-line answer using the current top-level
+`mx.get_active_memory` / `mx.device_info` spellings -- after seven web searches.
+
+## The result that reframes the experiment
+
+Combining both rounds, ordered by cost:
+
+| Task | Result | Tokens | Web searches |
+|---|---|---|---|
+| `p02_train_step_grads` | pass | 96,902 | 0 |
+| `p03_attention_speed` | pass | 178,974 | 1 |
+| `p05_kernel_rowsum` | pass | 240,738 | 2 |
+| `p01_metal_kernel_fused` | **fail** | 291,716 | 3 |
+| `p06_mxfp4_quant` | pass | 426,944 | 5 |
+| `p07_memory_api` | pass | 535,522 | 7 |
+
+**Pass rate 5/6. Token spread 5.5x. Correlation between token cost and web-search
+count: 0.998.**
+
+With web search available, a strong model faced with an unfamiliar accelerator API
+does not usually get it wrong. **It pays.** It searches the web, reads, experiments,
+and arrives at the right answer having spent five times the tokens of a familiar
+task. The single failure, `p01`, is the narrow case where even that was not enough,
+because the fact in question -- how MLX binds 0-d versus 1-d array inputs to a Metal
+kernel -- is not clearly stated in any page the model found.
+
+Consequences for the scored experiment:
+
+1. **Correctness is at ceiling and cannot carry the headline.** A pass-rate
+   comparison would be measuring an 83% baseline with little room to move, and would
+   report "no significant effect" while missing the real one.
+2. **Efficiency is the discriminating axis**, and it is continuous rather than
+   binary, so it has far more statistical power at the same run count. The minimum
+   detectable effect problem noted in the pre-registration is much less severe for
+   tokens than for pass/fail.
+3. **Leaving web search enabled in both arms was the right call and must stay.**
+   Disabling it would likely have turned several of these passes into failures and
+   made the kit look dramatically better than it is. The honest question is not
+   "does the kit beat a model with no documentation" but "does it beat a model that
+   can already search the documentation".
+
+The hypothesis under test therefore becomes: *at matched correctness, the kit
+reduces tokens, web searches, and tool calls* -- and additionally fixes the narrow
+band of facts, like `p01`, that searching does not reliably surface.
