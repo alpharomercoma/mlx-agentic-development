@@ -1,0 +1,42 @@
+FFF
+=================================== FAILURES ===================================
+_____________________ test_returns_expected_keys_and_types _____________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p07_memory_api_B_s1_r1/grader/test_solution.py:37: in test_returns_expected_keys_and_types
+    assert proc.returncode == 0, f"solution failed to run:\n{proc.stderr[-800:]}"
+E   AssertionError: solution failed to run:
+E     mx.metal.device_info is deprecated and will be removed in a future version. Use mx.device_info instead.
+E     Traceback (most recent call last):
+E       File "<string>", line 5, in <module>
+E       File "/private/tmp/mlx-bench-workspaces/codex_p07_memory_api_B_s1_r1/workspace/solution.py", line 12, in memory_report
+E         "device_name": mx.metal.device_info()["name"],
+E                        ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^
+E     KeyError: 'name'
+E     
+E   assert 1 == 0
+E    +  where 1 = CompletedProcess(args=['/Users/alpha/asic/.venv-mlx/bin/python', '-c', '\nimport json, sys\nsys.path.insert(0, sys.arg...evice_name": mx.metal.device_info()["name"],\n                   ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^\nKeyError: \'name\'\n').returncode
+__________________________ test_no_deprecation_notice __________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p07_memory_api_B_s1_r1/grader/test_solution.py:54: in test_no_deprecation_notice
+    assert "deprecated" not in stderr, (
+E   AssertionError: solution used a deprecated MLX API; stderr contained:
+E     mx.metal.device_info is deprecated and will be removed in a future version. Use mx.device_info instead.
+E   assert 'deprecated' not in "mx.metal.de...or: 'name'\n"
+E     
+E     'deprecated' is contained here:
+E       mx.metal.device_info is deprecated and will be removed in a future version. use mx.device_info instead.
+E     ?                         ++++++++++
+E       traceback (most recent call last):
+E         file "<string>", line 5, in <module>
+E         file "/private/tmp/mlx-bench-workspaces/codex_p07_memory_api_b_s1_r1/workspace/solution.py", line 12, in memory_report...
+E     
+E     ...Full output truncated (3 lines hidden), use '-vv' to show
+________________________ test_device_name_is_plausible _________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p07_memory_api_B_s1_r1/grader/test_solution.py:62: in test_device_name_is_plausible
+    line = [x for x in proc.stdout.splitlines() if x.startswith("REPORT_JSON:")][0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   IndexError: list index out of range
+=========================== short test summary info ============================
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p07_memory_api_B_s1_r1/grader/test_solution.py::test_returns_expected_keys_and_types
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p07_memory_api_B_s1_r1/grader/test_solution.py::test_no_deprecation_notice
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p07_memory_api_B_s1_r1/grader/test_solution.py::test_device_name_is_plausible
+3 failed in 0.11s
+

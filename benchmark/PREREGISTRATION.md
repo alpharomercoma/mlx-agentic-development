@@ -245,3 +245,43 @@ D−E therefore isolates content quality with catalog length held near-exactly
 constant, and it is added as a pre-specified contrast. If D ≈ E, then curation of the
 *text* adds nothing over raw documentation of the same material, which would be the
 most deflationary result this experiment can produce and is worth being able to state.
+
+# Amendment 2 — 2026-08-04, efficiency estimator and data hygiene
+
+## Efficiency was conditioned on passing, which is collider stratification
+
+The original plan restricted efficiency to runs that passed, reasoning that "a cheap
+failure is not an efficiency win". That reasoning is wrong in a specific way:
+conditioning a continuous outcome on a post-treatment binary compares arm-dependent
+subsamples. Arms differ in failure rate by hypothesis, so an arm can look efficient by
+failing cheaply while another fails expensively, and `p01` makes it vivid — the bare
+arm almost never passes it, so it contributes almost nothing to that task's
+comparison.
+
+Replaced with three estimators, all pre-specified:
+
+- **tokens per run, unconditional** — primary.
+- **cost per success** = total tokens across all attempts ÷ successes. This is what a
+  user actually pays and it charges an arm for its failures, which is the property the
+  original reasoning was reaching for.
+- **tokens over passing runs** — retained as an explicitly-labelled secondary so the
+  biased estimator can be compared against the unbiased one.
+
+## Mechanism check now covers every arm
+
+Previously reported for arm C alone. If arm C loads skill bodies and arm B never does,
+part of any C−B token gap is that asymmetry rather than content quality, and only a
+per-arm count makes it visible. Cache share of input tokens is reported per arm for the
+same reason: raw `input_tokens` is partly a function of run order.
+
+## All pre-repair scored data discarded
+
+Every scored run executed before this repair used the kit with nine dangling
+`references/` pointers, so arm C was sent to missing files on Complex tasks. Those 33
+runs are quarantined under `benchmark/results_prerepair/` and excluded, along with the
+earlier 18-run contaminated pilot. Mining runs are retained but excluded from scored
+analysis by an explicit filter — they predate the `web_search` field, and including
+them silently inflated arm A's sample by mixing two different experiments.
+
+**No scored data survives into the final analysis.** The sweep restarts from zero
+against the repaired kit and five arms.

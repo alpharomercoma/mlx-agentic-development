@@ -1,0 +1,5 @@
+Created [solution.py](/private/tmp/mlx-bench-workspaces/codex_p02_train_step_grads_B_s1_r0/workspace/solution.py).
+
+`train_step` computes MSE, obtains gradients, updates the model once, evaluates the update, and returns the loss as a Python `float`.
+
+I couldn’t execute the MLX smoke test because MLX is not installed in this environment.

@@ -1,0 +1,16 @@
+.F.
+=================================== FAILURES ===================================
+__________________________ test_no_deprecation_notice __________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p07_memory_api_A_s1_r0/grader/test_solution.py:54: in test_no_deprecation_notice
+    assert "deprecated" not in stderr, (
+E   AssertionError: solution used a deprecated MLX API; stderr contained:
+E     mx.metal.device_info is deprecated and will be removed in a future version. Use mx.device_info instead.
+E   assert 'deprecated' not in 'mx.metal.de...o instead.\n'
+E     
+E     'deprecated' is contained here:
+E       mx.metal.device_info is deprecated and will be removed in a future version. use mx.device_info instead.
+E     ?                         ++++++++++
+=========================== short test summary info ============================
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p07_memory_api_A_s1_r0/grader/test_solution.py::test_no_deprecation_notice
+1 failed, 2 passed in 0.11s
+

@@ -1,0 +1,5 @@
+Created [solution.py](/private/tmp/mlx-bench-workspaces/codex_p02_train_step_grads_C_s1_r1/workspace/solution.py).
+
+`train_step` uses `nn.value_and_grad`, updates the model through the supplied optimizer, materializes updated parameters, and returns the MSE loss as a Python `float`.
+
+Verification couldn’t run because MLX is not installed in this environment (`ModuleNotFoundError: mlx`).

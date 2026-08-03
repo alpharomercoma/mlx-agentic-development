@@ -1,0 +1,5 @@
+Implemented [solution.py](/private/tmp/mlx-bench-workspaces/codex_p04_quantized_matmul_A_s1_r4/workspace/solution.py).
+
+- `pack` uses 4-bit MLX quantization with group size 64.
+- `qmatmul` uses MLX quantized matmul with `transpose=True`, returning float32.
+- Syntax validation passed. MLX itself isn’t installed in this local environment, so numerical execution couldn’t be run here.

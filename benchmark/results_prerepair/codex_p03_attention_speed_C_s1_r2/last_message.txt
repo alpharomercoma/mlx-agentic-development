@@ -1,0 +1,5 @@
+Implemented [solution.py](/private/tmp/mlx-bench-workspaces/codex_p03_attention_speed_C_s1_r2/workspace/solution.py).
+
+It routes attention through MLX’s fused scaled-dot-product attention with explicit `1/sqrt(D)` scaling and the matching lower-right causal mask. This avoids materializing the score/mask tensors and is the fastest appropriate MLX path.
+
+Note: MLX is not installed in the available shell, so runtime equivalence and benchmarks could not be executed locally; syntax was validated.

@@ -1,0 +1,3 @@
+Implemented [solution.py](/private/tmp/mlx-bench-workspaces/codex_p05_kernel_rowsum_B_s1_r3/workspace/solution.py).
+
+It uses a custom Metal kernel with 32 threads per row, handles arbitrary `N`, and returns float32 `[M]`. Python syntax was validated; MLX isn’t installed in this workspace, so GPU execution could not be run locally.

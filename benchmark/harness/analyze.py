@@ -9,8 +9,20 @@ Everything computed is specified in `benchmark/PREREGISTRATION.md`:
   descriptive    pass@k, pass^k, per-task and per-area breakdowns (exploratory,
                  Benjamini-Hochberg corrected), and the strata splits
 
-Efficiency is computed **only over runs that passed**, because a cheap failure is not
-an efficiency win.
+Efficiency is computed **unconditionally**, over every run.
+
+Conditioning tokens on `passed` -- as the first version of this file did -- is collider
+stratification. Arms have different failure rates by hypothesis, so the surviving
+subsamples are not comparable, and an arm can look efficient by failing cheaply while
+another fails expensively. Amendment 2 records the change. Three estimators are
+reported:
+
+  tokens per run     unconditional. Primary.
+  cost per success   total tokens across all attempts / number of successes. This is
+                     the quantity a user actually pays, and it is the honest way to
+                     charge an arm for its failures.
+  tokens if passed   passing runs only, retained as a clearly-labelled secondary so
+                     the biased estimator can be compared against the unbiased one.
 
 Standard errors are clustered by task area. Tasks cluster -- two metal-kernel tasks,
 two quantization tasks -- and treating them as independent understates the error bars.
@@ -37,12 +49,22 @@ N_PERM = 10_000
 
 
 def load_runs(results: Path) -> list[dict]:
+    """Scored sweep runs only.
+
+    Mining runs live in the same directory but are baseline exploration, not scored
+    cells: they predate the web_search field, so a run without that key is a mining
+    run and is excluded. Including them silently inflated arm A's sample and mixed
+    two different experiments.
+    """
     runs = []
     for rj in sorted((results / "runs").glob("*/result.json")):
         try:
-            runs.append(json.loads(rj.read_text()))
+            d = json.loads(rj.read_text())
         except json.JSONDecodeError:
             continue
+        if "web_search" not in d:
+            continue
+        runs.append(d)
     return runs
 
 
@@ -244,13 +266,35 @@ def main() -> int:
         pm = mcnemar_exact(b, c)
         print(f"  McNemar C vs A: b={b} c={c}  exact two-sided p={pm:.4f}")
 
-    print("\nFAMILY 2 - EFFICIENCY (total tokens, passing runs only)")
-    for x, y in (("C", "B"), ("C", "A")):
+    print("\nFAMILY 2 - EFFICIENCY (tokens per run, UNCONDITIONAL - primary)")
+    # C-E and C-D first: after the corrected leakage audit these are the contrasts
+    # that survive, because both arms contain the facts so leakage cancels.
+    for x, y in (("C", "E"), ("C", "D"), ("D", "E"), ("C", "B"), ("C", "A")):
+        if x in arms and y in arms:
+            pr = paired_metric(
+                by, tasks, x, y, search, lambda r: r["metrics"]["total_tokens"], False
+            )
+            report_contrast(f"{x} - {y} tokens", pr, areas, alpha_head)
+
+    print("\nCOST PER SUCCESS (total tokens / successes; charges an arm for failures)")
+    for a in arms:
+        rs = [
+            r for r in runs if r["arm"] == a and bool(r.get("web_search", True)) == search
+        ]
+        if not rs:
+            continue
+        tot = sum(r["metrics"]["total_tokens"] for r in rs)
+        succ = sum(1 for r in rs if r["passed"])
+        cps = tot / succ if succ else float("inf")
+        print(f"  arm {a}: {tot:,} tokens / {succ} successes = {cps:,.0f} per success")
+
+    print("\nSECONDARY - tokens over PASSING runs only (biased; for comparison)")
+    for x, y in (("C", "E"), ("C", "A")):
         if x in arms and y in arms:
             pr = paired_metric(
                 by, tasks, x, y, search, lambda r: r["metrics"]["total_tokens"], True
             )
-            report_contrast(f"{x} - {y} tokens", pr, areas, alpha_head)
+            report_contrast(f"{x} - {y} tokens|passed", pr, areas, alpha_head)
 
     print("\nSECONDARY EFFICIENCY")
     for label, fn in (
@@ -274,15 +318,36 @@ def main() -> int:
         med = toks[len(toks) // 2] if toks else 0
         print(f"  arm {a}: {len(ps)}/{len(rs)} passed  median tokens (passing) {med:,}")
 
-    print("\nMECHANISM CHECK - kit skills actually invoked in arm C")
-    cruns = [r for r in runs if r["arm"] == "C"]
-    fired = [r for r in cruns if r["metrics"].get("skills_invoked")]
-    print(f"  {len(fired)}/{len(cruns)} arm-C runs invoked a kit skill")
-    if cruns and not fired:
-        print(
-            "  WARNING: the kit never fired. Any difference above came from prompt\n"
-            "  length, not the kit's content, and is uninterpretable as a kit effect."
-        )
+    print("\nMECHANISM CHECK - skill loads per arm")
+    # Reported for EVERY arm, not just C. If arm C loads bodies and arm B never does,
+    # part of any C-B token gap is that asymmetry rather than content quality, and
+    # only a per-arm count makes it visible.
+    for a in arms:
+        rs = [
+            r for r in runs if r["arm"] == a and bool(r.get("web_search", True)) == search
+        ]
+        if not rs:
+            continue
+        fired = [r for r in rs if r["metrics"].get("skills_invoked")]
+        names = sorted({s for r in rs for s in r["metrics"].get("skills_invoked", [])})
+        print(f"  arm {a}: {len(fired)}/{len(rs)} runs loaded a skill  {names or ''}")
+        if a == "C" and rs and not fired:
+            print(
+                "  WARNING: the kit never fired. Any difference above came from prompt\n"
+                "  length, not the kit's content, and is uninterpretable."
+            )
+
+    print("\nCACHE COVARIATE (raw input tokens are partly a function of run order)")
+    for a in arms:
+        rs = [
+            r for r in runs if r["arm"] == a and bool(r.get("web_search", True)) == search
+        ]
+        if not rs:
+            continue
+        inp = sum(r["metrics"]["input_tokens"] for r in rs)
+        cac = sum(r["metrics"]["cached_input_tokens"] for r in rs)
+        frac = cac / inp if inp else 0.0
+        print(f"  arm {a}: {frac:6.1%} of input tokens served from cache")
 
     print("\nPASS@K / PASS^K (arm C)")
     for t in tasks:

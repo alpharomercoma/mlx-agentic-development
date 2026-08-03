@@ -11,6 +11,9 @@ target-version = "py310"
 exclude = [
     "benchmark/results/**",
     "benchmark/results_invalid_pilot/**",
+    "benchmark/results_prerepair/**",
+    "benchmark/docs-kit/**",
+    "benchmark/facts-kit/**",
     "benchmark/tasks/*/test_solution.py",
     "benchmark/tasks/*/oracle/*.py",
     "benchmark/tasks/*/workspace/*.py",

@@ -1,0 +1,31 @@
+{
+  "task_id": "p02_train_step_grads",
+  "harness": "codex",
+  "arm": "A",
+  "repeat": 1,
+  "model": "gpt-5.6-terra",
+  "web_search": true,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 4,
+  "tests_total": 4,
+  "wall_clock_s": 37.45,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 97027,
+    "cached_input_tokens": 86272,
+    "cache_write_tokens": 0,
+    "output_tokens": 1346,
+    "reasoning_tokens": 351,
+    "total_tokens": 98373,
+    "model_calls": 7,
+    "turns": 1,
+    "tool_calls": 6,
+    "cost_usd": null,
+    "skills_invoked": []
+  },
+  "rate_limited": false,
+  "error": null
+}

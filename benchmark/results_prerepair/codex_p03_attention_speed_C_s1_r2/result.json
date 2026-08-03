@@ -1,0 +1,33 @@
+{
+  "task_id": "p03_attention_speed",
+  "harness": "codex",
+  "arm": "C",
+  "repeat": 2,
+  "model": "gpt-5.6-terra",
+  "web_search": true,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 6,
+  "tests_total": 6,
+  "wall_clock_s": 41.84,
+  "speedup": 2.59,
+  "metrics": {
+    "input_tokens": 128187,
+    "cached_input_tokens": 116736,
+    "cache_write_tokens": 0,
+    "output_tokens": 1469,
+    "reasoning_tokens": 344,
+    "total_tokens": 129656,
+    "model_calls": 8,
+    "turns": 1,
+    "tool_calls": 7,
+    "cost_usd": null,
+    "skills_invoked": [
+      "mlx-performance"
+    ]
+  },
+  "rate_limited": false,
+  "error": null
+}

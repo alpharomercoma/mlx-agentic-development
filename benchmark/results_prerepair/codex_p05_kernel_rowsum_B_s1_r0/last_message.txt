@@ -1,0 +1,3 @@
+Implemented [solution.py](/private/tmp/mlx-bench-workspaces/codex_p05_kernel_rowsum_B_s1_r0/workspace/solution.py).
+
+It launches 256 GPU threads per row, accumulates strided column chunks, and reduces shared threadgroup partial sums. It supports arbitrary `N`, including non-multiples of 256. Syntax compilation passed; MLX itself is unavailable in this container for runtime testing.

@@ -1,0 +1,33 @@
+{
+  "task_id": "p07_memory_api",
+  "harness": "codex",
+  "arm": "C",
+  "repeat": 4,
+  "model": "gpt-5.6-terra",
+  "web_search": true,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 3,
+  "tests_total": 3,
+  "wall_clock_s": 85.87,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 277996,
+    "cached_input_tokens": 241664,
+    "cache_write_tokens": 0,
+    "output_tokens": 2164,
+    "reasoning_tokens": 588,
+    "total_tokens": 280160,
+    "model_calls": 12,
+    "turns": 1,
+    "tool_calls": 11,
+    "cost_usd": null,
+    "skills_invoked": [
+      "mlx-performance"
+    ]
+  },
+  "rate_limited": false,
+  "error": null
+}

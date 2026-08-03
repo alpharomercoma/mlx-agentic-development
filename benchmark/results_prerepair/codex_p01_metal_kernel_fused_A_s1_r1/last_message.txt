@@ -1,0 +1,8 @@
+Implemented [`solution.py`](/private/tmp/mlx-bench-workspaces/codex_p01_metal_kernel_fused_A_s1_r1/workspace/solution.py).
+
+- Creates and caches one custom Metal kernel at import time.
+- Performs `x * scale + bias` inside that GPU kernel.
+- Returns float32 with `x`’s shape.
+- Handles empty arrays while preserving shape/dtype.
+
+Syntax compilation passed; MLX isn’t installed in this environment, so GPU execution couldn’t be run here.

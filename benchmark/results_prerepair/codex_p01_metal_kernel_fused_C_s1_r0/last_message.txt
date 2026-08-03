@@ -1,0 +1,5 @@
+Created [solution.py](/private/tmp/mlx-bench-workspaces/codex_p01_metal_kernel_fused_C_s1_r0/workspace/solution.py).
+
+It defines `fused_scale_bias` using one module-scoped `mx.fast.metal_kernel`, so the Metal kernel is built once and each call only dispatches it. It preserves `x`’s shape and dtype, including zero-sized shapes.
+
+Syntax validation passed. Runtime validation wasn’t possible because MLX is not installed in the available Python environments.

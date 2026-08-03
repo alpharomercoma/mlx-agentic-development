@@ -1,0 +1,93 @@
+FFFFFFFF.
+=================================== FAILURES ===================================
+________________________ test_matches_reference[shape0] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:30: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                           ~~~~~^~
+E   mlx/backend/metal/kernels/utils.h:450:40: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                                      ~~~~^~
+________________________ test_matches_reference[shape1] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:30: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                           ~~~~~^~
+E   mlx/backend/metal/kernels/utils.h:450:40: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                                      ~~~~^~
+________________________ test_matches_reference[shape2] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:30: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                           ~~~~~^~
+E   mlx/backend/metal/kernels/utils.h:450:40: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                                      ~~~~^~
+________________________ test_matches_reference[shape3] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:30: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                           ~~~~~^~
+E   mlx/backend/metal/kernels/utils.h:450:40: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                                      ~~~~^~
+________________________ test_matches_reference[shape4] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:30: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                           ~~~~~^~
+E   mlx/backend/metal/kernels/utils.h:450:40: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                                      ~~~~^~
+________________________ test_matches_reference[shape5] ________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:30: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                           ~~~~~^~
+E   mlx/backend/metal/kernels/utils.h:450:40: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                                      ~~~~^~
+_______________________ test_non_multiple_of_threadgroup _______________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py:33: in test_non_multiple_of_threadgroup
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:30: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                           ~~~~~^~
+E   mlx/backend/metal/kernels/utils.h:450:40: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                                      ~~~~^~
+_________________________ test_no_uninitialised_output _________________________
+/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py:44: in test_no_uninitialised_output
+    mx.eval(ra)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:30: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                           ~~~~~^~
+E   mlx/backend/metal/kernels/utils.h:450:40: error: subscripted value is not an array, pointer, or vector
+E           out[i] = x[i] * scale[0] + bias[0];
+E                                      ~~~~^~
+=========================== short test summary info ============================
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py::test_matches_reference[shape0]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py::test_matches_reference[shape1]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py::test_matches_reference[shape2]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py::test_matches_reference[shape3]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py::test_matches_reference[shape4]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py::test_matches_reference[shape5]
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py::test_non_multiple_of_threadgroup
+FAILED ../../../../../Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r1/grader/test_solution.py::test_no_uninitialised_output
+8 failed, 1 passed in 0.17s
+

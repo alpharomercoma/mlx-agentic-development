@@ -1,0 +1,33 @@
+{
+  "task_id": "p01_metal_kernel_fused",
+  "harness": "codex",
+  "arm": "C",
+  "repeat": 0,
+  "model": "gpt-5.6-terra",
+  "web_search": true,
+  "ok": true,
+  "timed_out": false,
+  "graded": false,
+  "passed": false,
+  "tests_passed": 1,
+  "tests_total": 9,
+  "wall_clock_s": 57.86,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 140899,
+    "cached_input_tokens": 119808,
+    "cache_write_tokens": 0,
+    "output_tokens": 2282,
+    "reasoning_tokens": 481,
+    "total_tokens": 143181,
+    "model_calls": 8,
+    "turns": 1,
+    "tool_calls": 7,
+    "cost_usd": null,
+    "skills_invoked": [
+      "mlx-metal-kernels"
+    ]
+  },
+  "rate_limited": false,
+  "error": null
+}
