@@ -47,6 +47,7 @@ class TrialResult:
     arm: str
     repeat: int
     model: str
+    web_search: bool
     ok: bool  # agent process exited cleanly
     timed_out: bool
     graded: bool  # grader ran at all
@@ -89,9 +90,10 @@ def run_codex(
     effort: str,
     timeout: int,
     scratch: Path,
+    web_search: bool,
 ) -> tuple[RunMetrics, bool, bool, str | None]:
     home = prepare_codex_home(arm, scratch, CODEX_AUTH)
-    cmd = codex_command(arm, prompt, task_dir, model, effort, out_dir)
+    cmd = codex_command(arm, prompt, task_dir, model, effort, out_dir, web_search)
     env = {**os.environ, "CODEX_HOME": str(home)}
 
     events = out_dir / "events.jsonl"
@@ -233,12 +235,13 @@ def run_trial(
     effort: str = "medium",
     venv_py: Path = DEFAULT_VENV_PY,
     max_usd: float = 5.0,
+    web_search: bool = True,
 ) -> TrialResult:
     meta, prompt, ws_src, test_file = load_task(task_id)
     timeout = int(meta.get("timeout_s", 900))
     arm = build_arms(kit, placebo)[arm_id]
 
-    run_id = f"{harness}_{task_id}_{arm_id}_r{repeat}"
+    run_id = f"{harness}_{task_id}_{arm_id}_s{int(web_search)}_r{repeat}"
     out_dir = results_root / "runs" / run_id
     if out_dir.exists():
         shutil.rmtree(out_dir)
@@ -251,7 +254,7 @@ def run_trial(
     t0 = time.perf_counter()
     if harness == "codex":
         metrics, timed_out, rate_limited, err = run_codex(
-            arm, prompt, task_dir, out_dir, model, effort, timeout, scratch
+            arm, prompt, task_dir, out_dir, model, effort, timeout, scratch, web_search
         )
     elif harness == "claude":
         metrics, timed_out, rate_limited, err = run_claude(
@@ -278,6 +281,7 @@ def run_trial(
         arm=arm_id,
         repeat=repeat,
         model=model,
+        web_search=web_search,
         ok=err is None and not timed_out,
         timed_out=timed_out,
         graded=graded,
@@ -307,6 +311,7 @@ def main() -> int:
     ap.add_argument("--repeat", type=int, default=0)
     ap.add_argument("--model", default="gpt-5.6-terra")
     ap.add_argument("--effort", default="medium")
+    ap.add_argument("--no-web-search", action="store_true")
     ap.add_argument("--kit", type=Path, default=REPO)
     ap.add_argument("--placebo", type=Path, default=REPO)
     ap.add_argument("--results", type=Path, default=REPO / "benchmark" / "results")
@@ -324,6 +329,7 @@ def main() -> int:
         model=args.model,
         effort=args.effort,
         venv_py=args.venv_python,
+        web_search=not args.no_web_search,
     )
     print(json.dumps(r.as_dict(), indent=2))
     return 0

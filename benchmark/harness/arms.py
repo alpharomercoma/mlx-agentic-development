@@ -85,9 +85,18 @@ CODEX_COMMON_FLAGS: tuple[str, ...] = (
     "project_doc_max_bytes=0",
     "-c",
     "check_for_update_on_startup=false",
-    "-c",
-    "tools.web_search=true",
 )
+
+
+def codex_flags(web_search: bool) -> tuple[str, ...]:
+    """Shared flags plus the web-search factor.
+
+    Web search is a deliberate experimental factor, not a convenience. Mining showed
+    the base model rarely fails when it can read documentation -- it pays instead --
+    so `on` asks whether the kit beats a model that can already search, and `off`
+    asks how much of the kit's value is substituting for documentation access.
+    """
+    return (*CODEX_COMMON_FLAGS, "-c", f"tools.web_search={str(web_search).lower()}")
 
 # stream-json rather than json: the single-object `json` format reports no tool
 # calls at all, so tool use is invisible. --verbose is required for stream-json
@@ -149,7 +158,13 @@ def prepare_codex_home(arm: Arm, root: Path, auth_source: Path) -> Path:
 
 
 def codex_command(
-    arm: Arm, prompt: str, task_dir: Path, model: str, effort: str, out_dir: Path
+    arm: Arm,
+    prompt: str,
+    task_dir: Path,
+    model: str,
+    effort: str,
+    out_dir: Path,
+    web_search: bool = True,
 ) -> list[str]:
     return [
         "codex",
@@ -169,7 +184,7 @@ def codex_command(
         "--strict-config",
         "--output-last-message",
         str(out_dir / "last_message.txt"),
-        *CODEX_COMMON_FLAGS,
+        *codex_flags(web_search),
         prompt,
     ]
 
