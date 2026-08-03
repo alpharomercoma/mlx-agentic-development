@@ -17,7 +17,8 @@ description: |
 names the problem.
 
 **Complex** — building from source, CUDA, or C++ extensions. Read
-`references/building.md`.
+the build requirements below, and run
+`scripts/probe_mlx_env.py` to see what your installed build actually reports.
 
 ## Install
 
@@ -42,6 +43,7 @@ and silently lose the accelerated paths. The PyPI wheel already includes them.
 
 ```python
 import mlx.core as mx
+
 print(mx.__version__, mx.metal.is_available())
 print(mx.device_info())
 ```

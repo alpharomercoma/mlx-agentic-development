@@ -16,7 +16,7 @@ description: |
 rules" and stop.
 
 **Medium** — a training loop, memory growth, or a numpy port. Add
-`references/porting.md`.
+the Porting reflexes table below.
 
 **Complex** — custom transforms, streams, mixed-device pipelines. Read everything.
 
@@ -32,7 +32,7 @@ Evaluate **once per loop iteration**, not after every operation:
 for batch in dataset:
     loss, grads = loss_and_grad_fn(model, batch)
     optimizer.update(model, grads)
-    mx.eval(model.parameters(), optimizer.state)   # once, at the end
+    mx.eval(model.parameters(), optimizer.state)  # once, at the end
 ```
 
 Forgetting `optimizer.state` is a real bug and not an obvious one: the optimiser's
@@ -60,8 +60,8 @@ You get whatever was in memory. Guard explicitly:
 
 ```python
 valid = (idx >= 0) & (idx < n)
-safe = mx.where(valid, idx, mx.zeros_like(idx))     # clamp BEFORE gathering
-out = mx.where(valid, mx.take(x, safe), fill)       # then mask the result
+safe = mx.where(valid, idx, mx.zeros_like(idx))  # clamp BEFORE gathering
+out = mx.where(valid, mx.take(x, safe), fill)  # then mask the result
 ```
 
 Also: slicing **copies** (unlike numpy views), so mutating `b = a[:]` leaves `a`

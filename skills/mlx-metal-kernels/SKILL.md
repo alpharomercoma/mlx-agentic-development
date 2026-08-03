@@ -23,11 +23,12 @@ Copy the skeleton below, adjust the body, write it. Read nothing else.
 Target: working kernel in minutes.
 
 **Medium** — reductions, multiple outputs, threadgroup cooperation, non-float32
-dtypes. Read `references/kernel-api.md`. Prefer a threadgroup tree reduction over
+dtypes. Prefer a threadgroup tree reduction over
 atomics.
 
 **Complex** — differentiable kernels, atomics, templates, non-contiguous inputs,
-strided access. Read `references/kernel-api.md` and `references/traps.md` in full.
+strided access. Run `scripts/probe_kernel_binding.py` first -- it prints how each
+input rank actually binds in your installed version -- then read the whole page.
 
 **Before writing any kernel, ask whether one is needed.** `mx.fast` already ships
 fused `rms_norm`, `layer_norm`, `rope`, and `scaled_dot_product_attention`, and on
@@ -53,12 +54,13 @@ _kernel = mx.fast.metal_kernel(
     """,
 )
 
+
 def my_op(a, b):
     (out,) = _kernel(
         inputs=[a, b],
         output_shapes=[a.shape],
         output_dtypes=[a.dtype],
-        grid=(a.size, 1, 1),        # THREADS, not threadgroups
+        grid=(a.size, 1, 1),  # THREADS, not threadgroups
         threadgroup=(256, 1, 1),
     )
     return out
@@ -76,8 +78,9 @@ here. `grid=(n, 1, 1)` launches `n` threads total. It is passed to
 silently computes only the first fraction of your array. Each `threadgroup`
 dimension must not exceed the corresponding `grid` dimension.
 
-**3. Scalars bind by value or by pointer depending on rank.** Verified on
-MLX 0.32.0:
+**3. Scalars bind by value or by pointer depending on rank.** Run
+`scripts/probe_kernel_binding.py` to see this compiled live in your version; it tries
+all six combinations and prints which compile. Verified on MLX 0.32.0:
 
 | Passed in `inputs` | Bound as | Use in `source` |
 |---|---|---|

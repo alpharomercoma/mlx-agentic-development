@@ -98,6 +98,7 @@ def codex_flags(web_search: bool) -> tuple[str, ...]:
     """
     return (*CODEX_COMMON_FLAGS, "-c", f"tools.web_search={str(web_search).lower()}")
 
+
 # stream-json rather than json: the single-object `json` format reports no tool
 # calls at all, so tool use is invisible. --verbose is required for stream-json
 # to emit assistant messages.

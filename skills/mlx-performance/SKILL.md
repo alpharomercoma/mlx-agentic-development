@@ -17,9 +17,12 @@ description: |
 the dtype. Usually finishes here. Read nothing else.
 
 **Measured** — a real regression or an unexplained cost. Follow "Measure before
-optimising", then read `references/memory.md`.
+optimising", then run
+`scripts/check_deprecations.py` to confirm which memory APIs are current in your
+installed version.
 
-**Deep** — kernel-level work. Read `references/nax.md`, then hand off to
+**Deep** — kernel-level work. Run `skills/mlx-env-setup/scripts/probe_mlx_env.py` to confirm Neural
+Accelerator eligibility on this machine, then hand off to
 `mlx-metal-kernels`.
 
 ## Reach for a fused op before writing anything
@@ -87,6 +90,10 @@ only inspects warnings.
 `mx.metal.is_available()` and `mx.metal.start_capture()`/`stop_capture()` are **not**
 deprecated.
 
+**The table above is a snapshot; the set moves every release.** Run
+`scripts/check_deprecations.py` to print what is actually deprecated in the installed
+version, and what each moved to.
+
 `get_active_memory()` excludes cached buffers, so it will not match Activity Monitor.
 The default memory limit is 1.5× the recommended working-set size, which means MLX
 will let you into swap before it raises.
@@ -95,6 +102,7 @@ will let you into swap before it raises.
 
 ```python
 import time, mlx.core as mx
+
 
 def bench(fn, *args, n=50, warmup=5):
     for _ in range(warmup):
@@ -115,9 +123,11 @@ are comparing instead of running all of A then all of B, take the minimum of sev
 interleaved rounds, and report the coefficient of variation. A "speedup" measured
 while the chassis was cool is not a speedup.
 
-Small matmuls are launch-bound, not compute-bound. Measured on a 10-core M5:
-float32 matmul reaches ~1.7 TFLOP/s at 1024² but ~9.1 TFLOP/s at 2048². Do not
-extrapolate small-shape timings.
+Small matmuls are launch-bound, not compute-bound. Measured once on a 10-core M5:
+float32 matmul reached ~1.7 TFLOP/s at 1024² but ~9.1 TFLOP/s at 2048². **Those are
+this machine on one afternoon, not constants** — re-measure with the recipe above
+before quoting a number. The shape of the effect is the durable part; the figures are
+not.
 
 ## Honesty rails
 

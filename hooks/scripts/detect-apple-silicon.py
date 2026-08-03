@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 """Canonical Apple silicon constants for mlx-agentic-development.
 
-This file is the single source of truth for every chip figure in this repository.
-Reference pages are generated from it (see .github/scripts/gen_hardware_doc.py) and
-CI fails if they drift. Never hardcode a chip spec anywhere else.
+Constants used by the SessionStart hook, which must not import mlx.
+
+SCOPE, stated plainly: this table was populated from ONE machine, an M5. For every
+other chip it reports "unknown", which is honest but not useful. For anything beyond
+the hook -- and for M1 through M4 -- use
+`skills/mlx-env-setup/scripts/probe_mlx_env.py`, which asks Metal directly and works
+on every part.
+
+An earlier version of this docstring claimed reference pages were generated from this
+file and that CI failed on drift. Neither was true: the generator was never written
+and the CI step was guarded by `if [ -f ... ]`, so it silently passed forever.
 
 It must never import mlx. Importing mlx initializes Metal and allocates GPU
 resources, which would disturb any workload the user already has running -- and this
@@ -50,10 +58,13 @@ CHIPS: dict[str, dict] = {
     # Metal architecture strings were not observed by this project, and the NAX
     # gate reads that string. A wrong arch_gen here would silently mis-report
     # accelerator availability, which is worse than reporting "unknown".
-    "M4": {"arch_gen": None, "has_neural_accelerators": False, "verified": "unknown"},
-    "M3": {"arch_gen": None, "has_neural_accelerators": False, "verified": "unknown"},
-    "M2": {"arch_gen": None, "has_neural_accelerators": False, "verified": "unknown"},
-    "M1": {"arch_gen": None, "has_neural_accelerators": False, "verified": "unknown"},
+    # has_neural_accelerators is None, not False. False would be an assertion this
+    # project never verified, and a wrong False actively misinforms. The probe script
+    # answers this correctly on any chip.
+    "M4": {"arch_gen": None, "has_neural_accelerators": None, "verified": "unknown"},
+    "M3": {"arch_gen": None, "has_neural_accelerators": None, "verified": "unknown"},
+    "M2": {"arch_gen": None, "has_neural_accelerators": None, "verified": "unknown"},
+    "M1": {"arch_gen": None, "has_neural_accelerators": None, "verified": "unknown"},
 }
 
 # Minimum macOS for MLX's Neural Accelerator (NAX) kernels, from the runtime gate
@@ -134,8 +145,9 @@ def nax_status(chip: str | None, macos: tuple[int, ...] | None) -> dict:
     if gen is None or arch is None:
         return {
             "available": None,
-            "reason": "metal architecture for this chip is not recorded in the chip "
-            "table; query mx.device_info()['architecture'] to establish it",
+            "reason": "this chip is not in the table, which was populated from an M5 "
+            "only; run skills/mlx-env-setup/scripts/probe_mlx_env.py, which asks Metal "
+            "directly and works on every part",
             "macos_ok": os_ok,
             "required_macos": ".".join(str(p) for p in NAX_MIN_MACOS),
         }

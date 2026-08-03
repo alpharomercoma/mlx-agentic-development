@@ -18,7 +18,8 @@ description: |
 "Compiled training step".
 
 **Complex** — custom vjp, checkpointing, shapeless compile. Read
-`references/transforms.md`.
+the Compiled training step section below, then
+`mx.disable_compile()` to confirm a suspected compile trap.
 
 ## The two traps
 
@@ -51,7 +52,8 @@ from functools import partial
 
 state = [mx.zeros(())]
 
-@partial(mx.compile, inputs=state, outputs=state)   # state declared, not captured
+
+@partial(mx.compile, inputs=state, outputs=state)  # state declared, not captured
 def step(x):
     state[0] = state[0] + mx.sum(x)
     return state[0]
@@ -78,11 +80,13 @@ Related consequences:
 ```python
 state = [model.state, optimizer.state, mx.random.state]
 
+
 @partial(mx.compile, inputs=state, outputs=state)
 def step(x, y):
     loss, grads = nn.value_and_grad(model, loss_fn)(model, x, y)
     optimizer.update(model, grads)
     return loss
+
 
 for x, y in data:
     loss = step(x, y)

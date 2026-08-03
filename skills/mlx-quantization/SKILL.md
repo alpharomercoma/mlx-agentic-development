@@ -18,7 +18,8 @@ mutates it in place. Done.
 below; it is the thing that breaks people.
 
 **Complex** — mixed precision per layer, activation quantisation, learned
-quantisation (DWQ/AWQ/GPTQ). Read `references/modes.md`.
+quantisation (DWQ/AWQ/GPTQ). Run `scripts/probe_quant_modes.py` to print the actual
+return arity and defaults for every mode in your installed version.
 
 ## The mode table — read this before writing any code
 
@@ -32,15 +33,19 @@ quantisation (DWQ/AWQ/GPTQ). Read `references/modes.md`.
 | `nvfp4` | **2**: `w_q, scales` | 16 | 4 | e4m3 |
 
 Verified against MLX 0.32.0. Affine supports **2, 3, 4, 5, 6, and 8 bits** — not just
-4 and 8.
+4 and 8. **Run `scripts/probe_quant_modes.py` rather than trusting this table**: it
+prints the return arity, effective group size, and dequantise dtype for every mode in
+the installed version. It also shows a detail the table above understates — `dequantize`
+defaults to float32 for `affine` but **bfloat16** for the other three modes.
 
 Consequences:
 
 ```python
 # Affine: three values, and biases must be passed on.
 w_q, scales, biases = mx.quantize(w, group_size=64, bits=4)
-y = mx.quantized_matmul(x, w_q, scales=scales, biases=biases,
-                        transpose=True, group_size=64, bits=4)
+y = mx.quantized_matmul(
+    x, w_q, scales=scales, biases=biases, transpose=True, group_size=64, bits=4
+)
 
 # mxfp4: TWO values. Unpacking three raises. biases must be omitted, and the
 # defaults differ, so do not copy affine's group_size=64.
@@ -73,9 +78,10 @@ accumulates differently. Measured on M5, MLX 0.32.0, relative Frobenius error:
 | full-precision matmul vs dequantise-then-matmul | 9.3e-2 | 1.2e-1 |
 
 So a correct implementation sits two orders of magnitude closer to the dequantised
-reference than an unquantised one. Use that gap to set a tolerance: measure the
-correct implementation first, then choose a threshold with margin, rather than
-picking a round number.
+reference than an unquantised one. **Run `scripts/measure_quant_error.py`** to get
+these numbers for your machine and version — it prints the separation and the interval
+any valid tolerance must sit inside. Upstream moves these figures; a commit fixing
+nvfp4 through the split-K path landed within a month of the version above.
 
 If your quantised result matches full precision *too* well, you probably are not
 quantising at all.

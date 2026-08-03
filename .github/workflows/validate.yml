@@ -23,11 +23,6 @@ jobs:
           exit $fail
       - name: Repository invariants
         run: python3 .github/scripts/check_repo_invariants.py
-      - name: Hardware table is not stale
-        run: |
-          if [ -f .github/scripts/gen_hardware_doc.py ]; then
-            python3 .github/scripts/gen_hardware_doc.py --check
-          fi
 
   lint:
     runs-on: ubuntu-latest

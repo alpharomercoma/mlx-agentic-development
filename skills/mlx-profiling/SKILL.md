@@ -8,6 +8,13 @@ description: |
 
 # Profiling MLX
 
+> **Unverified.** Nothing on this page was executed. Only Command Line Tools are
+> installed on the machine this kit was written on, so the Xcode Metal debugger was
+> never opened and no trace was ever captured. The API surface and the two failure
+> modes below are documentation-derived. Treat them as a starting point, verify before
+> relying on them, and prefer the timing recipe in `mlx-performance`, which was
+> measured.
+
 ## Complexity Assessment
 
 **Start here, and usually stop here.** There is no MLX profiler. Before capturing
@@ -24,7 +31,8 @@ it is the right tool far more often than a trace.
 
 ```python
 import mlx.core as mx
-mx.metal.start_capture("trace.gputrace")   # path must NOT already exist
+
+mx.metal.start_capture("trace.gputrace")  # path must NOT already exist
 ...
 mx.metal.stop_capture()
 ```

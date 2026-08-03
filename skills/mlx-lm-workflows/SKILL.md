@@ -9,6 +9,16 @@ description: |
 
 # mlx-lm workflows
 
+> **Unverified.** No model was downloaded, served, converted, or fine-tuned while
+> writing this page. The commands are documentation-derived, and the 24 GB sizing
+> figures are extrapolated from upstream measurements taken on a 64 GB M4 Max, not
+> measured here. Run `mlx_lm.<command> --help`, which is authoritative for your
+> installed version, before trusting any flag below.
+>
+> This page is also **narrower than mlx-lm actually is**: continuous batching, the LRU
+> prompt cache, the per-model tool-call parsers, `batch_generate`, `evaluate`,
+> `perplexity`, and the learned-quantisation commands all exist and are not covered.
+
 ## Complexity Assessment
 
 **Simple** — generate text or serve a model. Two commands below. Stop.
@@ -17,7 +27,8 @@ description: |
 memory section.
 
 **Complex** — LoRA/QLoRA fine-tuning or learned quantisation. Read
-`references/training.md`.
+the LoRA section below and `mlx_lm.lora --help`, which is
+authoritative for your installed version.
 
 ## Generate and serve
 
@@ -34,6 +45,7 @@ Python:
 
 ```python
 from mlx_lm import load, generate
+
 model, tokenizer = load("mlx-community/Llama-3.2-3B-Instruct-4bit")
 prompt = tokenizer.apply_chat_template(messages, add_generation_prompt=True)
 print(generate(model, tokenizer, prompt=prompt, verbose=True))

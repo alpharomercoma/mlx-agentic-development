@@ -13,11 +13,20 @@ Each check exists because violating it fails silently rather than loudly:
                 agent tiers its reference loading instead of reading everything.
   sources       House rule: any skill with references/ carries references/SOURCES.md,
                 because upstream docs carry per-page attribution obligations.
+  dangling-ref  Every references/... path named in a SKILL.md must resolve. This is
+                the check that would have caught nine live defects: every skill's
+                Complexity Assessment pointed at a reference page that was never
+                written, so on exactly the Complex tasks where the kit should earn
+                its keep, the agent was sent to a file that does not exist, burned
+                tool calls discovering that, and fell back to web search. The kit
+                was a token tax rather than a token saving, and CI passed green.
+  sources-ghost References/SOURCES.md must not attribute a page that does not exist.
 """
 
 from __future__ import annotations
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -74,6 +83,65 @@ def check_skills() -> None:
         refs = skill_dir / "references"
         if refs.is_dir() and not (refs / "SOURCES.md").is_file():
             fail("sources", f"{skill_dir.name}/references/ has no SOURCES.md")
+
+        check_references_resolve(skill_dir, body)
+
+
+REF_PATH = re.compile(r"references/[A-Za-z0-9_.-]+\.md")
+# Same defect class: a SKILL.md that tells the agent to run a script which is not
+# there wastes a tool call and sends it back to web search.
+# The optional leading segment matters: `hooks/scripts/detect-apple-silicon.py` is a
+# repo-root path, not a skill-local one, and resolving it against the skill directory
+# would report a false failure.
+SCRIPT_PATH = re.compile(r"((?:[A-Za-z0-9_.-]+/)*scripts/[A-Za-z0-9_.-]+\.py)")
+
+
+def check_references_resolve(skill_dir: Path, body: str) -> None:
+    """Every references/... and scripts/... path a SKILL.md names must exist."""
+    for rel in sorted(set(REF_PATH.findall(body))):
+        if not (skill_dir / rel).is_file():
+            fail(
+                "dangling-ref",
+                f"{skill_dir.name}/SKILL.md points at {rel}, which does not exist; "
+                "the agent will be sent to a missing file",
+            )
+
+    for rel in sorted(set(SCRIPT_PATH.findall(body))):
+        # Skill-local paths resolve against the skill; anything else against the repo.
+        target = skill_dir / rel if rel.startswith("scripts/") else ROOT / rel
+        if not target.is_file():
+            fail(
+                "dangling-ref",
+                f"{skill_dir.name}/SKILL.md tells the agent to run {rel}, "
+                "which does not exist",
+            )
+        elif not os.access(target, os.X_OK):
+            fail(
+                "dangling-ref",
+                f"{target.relative_to(ROOT)} is not executable",
+            )
+
+    # A SOURCES.md row citing provenance for a page that was never written claims
+    # attribution for content that does not exist.
+    sources = skill_dir / "references" / "SOURCES.md"
+    if sources.is_file():
+        text = sources.read_text(encoding="utf-8")
+        for rel in sorted(set(REF_PATH.findall(text))):
+            if not (skill_dir / rel).is_file():
+                fail(
+                    "sources-ghost",
+                    f"{skill_dir.name}/references/SOURCES.md attributes {rel}, "
+                    "which does not exist",
+                )
+        for name in sorted(set(re.findall(r"`([a-z0-9_-]+\.md)`", text))):
+            if name == "SOURCES.md":
+                continue
+            if not (skill_dir / "references" / name).is_file():
+                fail(
+                    "sources-ghost",
+                    f"{skill_dir.name}/references/SOURCES.md attributes `{name}`, "
+                    "which does not exist",
+                )
 
 
 def check_symlinks() -> None:
