@@ -1,0 +1,8 @@
+{
+  "id": "p01_metal_kernel_fused",
+  "area": "metal-kernels",
+  "tier": "authoring",
+  "provenance": "authored",
+  "timeout_s": 1200,
+  "rationale": "Custom Metal kernel authoring. Known model failure modes: writing a full [[kernel]] signature instead of the body only; treating grid as threadblocks rather than threads; leaving outputs uninitialised."
+}

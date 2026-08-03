@@ -1,0 +1,8 @@
+{
+  "id": "p03_attention_speed",
+  "area": "performance",
+  "tier": "optimization",
+  "provenance": "authored",
+  "timeout_s": 1500,
+  "rationale": "Performance routing. The large win is mx.fast.scaled_dot_product_attention, which on an M5 also reaches the NAX Neural Accelerator path. Naive manual softmax attention misses it entirely. Graded on correctness AND measured speedup (KernelBench fast_p)."
+}
