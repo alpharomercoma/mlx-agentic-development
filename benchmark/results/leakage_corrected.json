@@ -1,0 +1,192 @@
+{
+  "ngram": 13,
+  "symbol_threshold": 0.6,
+  "kit_files_scanned": 21,
+  "tasks": [
+    {
+      "task": "p01_metal_kernel_fused",
+      "shared_13grams": 5,
+      "symbols_total": 21,
+      "symbols_in_kit": 17,
+      "symbol_coverage": 0.81,
+      "closest_kit_file": "skills/mlx-metal-kernels/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "bias",
+        "grid",
+        "inp",
+        "input_names",
+        "inputs",
+        "mx.fast",
+        "mx.fast.metal_kernel",
+        "mx.float32",
+        "name",
+        "out",
+        "output_dtypes",
+        "output_names",
+        "output_shapes",
+        "scale",
+        "source",
+        "threadgroup",
+        "x.shape"
+      ]
+    },
+    {
+      "task": "p02_train_step_grads",
+      "shared_13grams": 26,
+      "symbols_total": 6,
+      "symbols_in_kit": 4,
+      "symbol_coverage": 0.667,
+      "closest_kit_file": "skills/mlx-compile-and-transforms/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "model.parameters",
+        "nn.value_and_grad",
+        "optimizer.state",
+        "optimizer.update"
+      ]
+    },
+    {
+      "task": "p03_attention_speed",
+      "shared_13grams": 2,
+      "symbols_total": 7,
+      "symbols_in_kit": 5,
+      "symbol_coverage": 0.714,
+      "closest_kit_file": "skills/mlx-performance/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "causal",
+        "mask",
+        "mx.fast",
+        "mx.fast.scaled_dot_product_attention",
+        "scale"
+      ]
+    },
+    {
+      "task": "p04_quantized_matmul",
+      "shared_13grams": 4,
+      "symbols_total": 7,
+      "symbols_in_kit": 7,
+      "symbol_coverage": 1.0,
+      "closest_kit_file": "skills/mlx-quantization/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "biases",
+        "bits",
+        "group_size",
+        "mx.quantize",
+        "mx.quantized_matmul",
+        "scales",
+        "transpose"
+      ]
+    },
+    {
+      "task": "p05_kernel_rowsum",
+      "shared_13grams": 9,
+      "symbols_total": 18,
+      "symbols_in_kit": 15,
+      "symbol_coverage": 0.833,
+      "closest_kit_file": "skills/mlx-metal-kernels/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "grid",
+        "init_value",
+        "input_names",
+        "inputs",
+        "mx.fast",
+        "mx.fast.metal_kernel",
+        "mx.float32",
+        "name",
+        "out",
+        "output_dtypes",
+        "output_names",
+        "output_shapes",
+        "source",
+        "threadgroup",
+        "x.shape"
+      ]
+    },
+    {
+      "task": "p06_mxfp4_quant",
+      "shared_13grams": 0,
+      "symbols_total": 6,
+      "symbols_in_kit": 6,
+      "symbol_coverage": 1.0,
+      "closest_kit_file": "skills/mlx-quantization/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "mode",
+        "mx.quantize",
+        "mx.quantized_matmul",
+        "mxfp4",
+        "scales",
+        "transpose"
+      ]
+    },
+    {
+      "task": "p07_memory_api",
+      "shared_13grams": 0,
+      "symbols_total": 8,
+      "symbols_in_kit": 5,
+      "symbol_coverage": 0.625,
+      "closest_kit_file": "skills/mlx-performance/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "device_name",
+        "mx.device_info",
+        "mx.get_active_memory",
+        "mx.get_cache_memory",
+        "mx.get_peak_memory"
+      ]
+    },
+    {
+      "task": "p08_compile_state",
+      "shared_13grams": 16,
+      "symbols_total": 6,
+      "symbols_in_kit": 6,
+      "symbol_coverage": 1.0,
+      "closest_kit_file": "skills/mlx-compile-and-transforms/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "inputs",
+        "mx.compile",
+        "mx.float32",
+        "mx.sum",
+        "mx.zeros",
+        "outputs"
+      ]
+    },
+    {
+      "task": "p09_rope_offsets",
+      "shared_13grams": 0,
+      "symbols_total": 7,
+      "symbols_in_kit": 5,
+      "symbol_coverage": 0.714,
+      "closest_kit_file": "skills/mlx-metal-kernels/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "base",
+        "mx.fast",
+        "mx.fast.rope",
+        "scale",
+        "x.shape"
+      ]
+    },
+    {
+      "task": "p10_bool_mask_assign",
+      "shared_13grams": 0,
+      "symbols_total": 6,
+      "symbols_in_kit": 5,
+      "symbol_coverage": 0.833,
+      "closest_kit_file": "skills/mlx-core-semantics/SKILL.md",
+      "stratum": "in-kit",
+      "leaked_symbols": [
+        "mx.float32",
+        "mx.take",
+        "mx.where",
+        "mx.zeros_like",
+        "x.shape"
+      ]
+    }
+  ]
+}

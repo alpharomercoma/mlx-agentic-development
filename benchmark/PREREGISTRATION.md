@@ -147,3 +147,72 @@ contradicting them is a finding, rather than both being narrated as success.
 | Co-primary correctness **and** efficiency, rather than correctness alone | Mining found correctness at ceiling (5/6) and token cost varying 5.5× with r = 0.998 against web-search count. Correctness alone would have reported a null while missing the real effect. Decided before any scored run. |
 | Web search added as a full second factor | Follows from the same finding. |
 | Gold solutions **not** authored independently | The plan called for a separate author so the kit author had never seen the solutions. The same author wrote both. Author independence cannot be claimed; the mechanical leakage audit is the actual defence and its table is published. This is a real limitation, not a resolved one. |
+
+---
+
+# Amendment 1 — 2026-08-04, before any scored run
+
+Recorded rather than silently applied, as the document requires. No scored data
+existed when this was written: the only sweep had been stopped at 12 runs and
+discarded, and the pilot is explicitly non-confirmatory.
+
+## The leakage audit was broken, and the corrected result removes the novel stratum
+
+The original audit compared **only fenced Python blocks**. The kit's payload is
+Markdown tables and prose, so almost all of it was discarded before comparison.
+`p07_memory_api` was classified "novel" while its exact answer sat in a six-row table
+in `skills/mlx-performance/SKILL.md`.
+
+The audit now measures all delivered kit text and adds **symbol coverage**: the
+fraction of API symbols and literal keys the oracle uses that appear anywhere in the
+kit. Scoped to `skills/`, which is exactly what an arm receives.
+
+Corrected result:
+
+| Task | Shared 13-grams | Symbol coverage | Stratum |
+|---|---|---|---|
+| `p01_metal_kernel_fused` | 5 | 0.81 | in-kit |
+| `p02_train_step_grads` | 26 | 0.67 | in-kit |
+| `p03_attention_speed` | 2 | 0.71 | in-kit |
+| `p04_quantized_matmul` | 4 | **1.00** | in-kit |
+| `p05_kernel_rowsum` | 9 | 0.83 | in-kit |
+| `p06_mxfp4_quant` | 0 | **1.00** | in-kit |
+| `p07_memory_api` | 0 | 0.62 | in-kit |
+| `p08_compile_state` | 16 | **1.00** | in-kit |
+| `p09_rope_offsets` | 0 | 0.71 | in-kit |
+| `p10_bool_mask_assign` | 0 | 0.83 | in-kit |
+
+**10 of 10 tasks are in-kit.** The novel stratum does not exist.
+
+The earlier line "Pre-kit baseline: all 10 tasks novel, zero shared 13-grams" is
+**withdrawn**. It was vacuous — the kit did not exist when it was computed — and it
+read as a reassurance it could not support.
+
+## What this does to the claims
+
+**C−A and C−B can no longer be read as evidence of assistance.** With the answer
+present in the kit for every task, those contrasts bound *memorisation-substitution*:
+they measure how much cheaper it is to be told than to search. That is a real and
+reportable quantity, but it is not "the kit makes the agent better at MLX", and it
+will not be described as such.
+
+**The contrasts that survive are C−E and C−D**, and they become the primary questions:
+
+- **C−E (kit vs. the same facts as an unstructured cheat sheet).** Both arms contain
+  the facts, so leakage is held constant and cancels. This isolates whether the skill
+  *format* — frontmatter, description-based routing, Complexity Assessment tiering,
+  progressive disclosure, honesty rails — contributes anything beyond the text.
+- **C−D (kit vs. size-matched raw upstream docs).** Both contain the material; this
+  isolates whether *curation* beats *concatenation*.
+
+These were added for independent reasons before this audit was corrected. They now
+carry the experiment. Without them, the corrected leakage result would have left
+nothing interpretable.
+
+## Revised predictions
+
+6. **C−E is null or small.** If the facts are what matter, structure is decoration.
+   This is the prediction most likely to be uncomfortable and most worth recording.
+7. **C−D favours C**, because raw docs are long and unrouted — but by less than C−A.
+8. C−A remains large on the high-search tasks and is reported as an upper bound on
+   memorisation-substitution, never as assistance.
