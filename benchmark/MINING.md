@@ -123,3 +123,46 @@ Consequences for the scored experiment:
 The hypothesis under test therefore becomes: *at matched correctness, the kit
 reduces tokens, web searches, and tool calls* -- and additionally fixes the narrow
 band of facts, like `p01`, that searching does not reliably surface.
+
+## Complete baseline — all 10 tasks, bare Codex
+
+| Task | Result | Tokens | Web searches |
+|---|---|---|---|
+| `p08_compile_state` | pass | 66,794 | 0 |
+| `p02_train_step_grads` | pass | 96,902 | 0 |
+| `p10_bool_mask_assign` | pass | 131,495 | 0 |
+| `p09_rope_offsets` | pass | 149,653 | 1 |
+| `p03_attention_speed` | pass | 178,974 | 1 |
+| `p05_kernel_rowsum` | pass | 240,738 | 2 |
+| `p04_quantized_matmul` | pass | 250,568 | — |
+| `p01_metal_kernel_fused` | **fail** | 291,716 | 3 |
+| `p06_mxfp4_quant` | pass | 426,944 | 5 |
+| `p07_memory_api` | pass | 535,522 | 7 |
+
+**Pass rate 9/10. Token spread 8.0x. Correlation between tokens and web searches
+across the nine tasks with search counts: 0.993.**
+
+### Strata fixed before scoring
+
+- **Ceiling** (bare model passes): all except `p01`.
+- **Failing band**: `p01` alone. Correctness can only move here, which is why the
+  correctness family is expected to return a null and why efficiency was made
+  co-primary.
+- **High-search** (≥ 2 searches, where the efficiency hypothesis predicts the
+  largest effect): `p05`, `p01`, `p06`, `p07`.
+- **Low-search** (0 searches, near-floor cost): `p08`, `p02`, `p10`.
+
+### Budget model
+
+10 runs consumed 2,369,306 tokens and moved Codex's weekly `used_percent` from
+24.0% to 26.0%. That implies roughly **1% per 1.18M tokens**, so a window of order
+**118M tokens**, and a mean run cost of **~237k tokens**.
+
+Projected for the scored experiment at 300 Codex runs: ~70M tokens if every run cost
+the with-search average, which would be around 60% of the window. The no-search half
+should be materially cheaper, and if the kit's hypothesis holds, arms B and C should
+be cheaper too. The sweep is therefore affordable but not comfortably so.
+
+Mitigation: run the web-search-`on` condition first because it carries the primary
+claim, checkpoint after every run, and record `used_percent` per run so the sweep can
+be paused before exhausting the window rather than dying partway through.
