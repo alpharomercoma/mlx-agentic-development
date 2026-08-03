@@ -1,0 +1,45 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  invariants:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate JSON
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f" \
+              || { echo "invalid JSON: $f"; fail=1; }
+          done < <(find . -name '*.json' -not -path './.git/*')
+          exit $fail
+      - name: Repository invariants
+        run: python3 .github/scripts/check_repo_invariants.py
+      - name: Hardware table is not stale
+        run: |
+          if [ -f .github/scripts/gen_hardware_doc.py ]; then
+            python3 .github/scripts/gen_hardware_doc.py --check
+          fi
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pipx install ruff
+      - run: ruff check .
+      - run: ruff format --check .
+      - name: shellcheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          find . -name '*.sh' -not -path './.git/*' -print0 | xargs -0 -r shellcheck

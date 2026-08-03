@@ -1,0 +1,15 @@
+{
+  "name": "alpharomercoma",
+  "owner": {
+    "name": "Alpha Romer Coma",
+    "url": "https://github.com/alpharomercoma"
+  },
+  "plugins": [
+    {
+      "name": "mlx-agentic-development",
+      "source": "./",
+      "description": "Skills and agents for Apple MLX development: Metal kernels, M5 Neural Accelerator routing, quantization, and mlx-lm workflows.",
+      "license": "Apache-2.0"
+    }
+  ]
+}

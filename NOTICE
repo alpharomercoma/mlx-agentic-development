@@ -1,0 +1,13 @@
+mlx-agentic-development
+Copyright 2026 Alpha Romer Coma
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+This project's structure was informed by AWS's neuron-agentic-development
+(https://github.com/aws-neuron/neuron-agentic-development) and by this author's
+xla-agentic-development. No code or documentation text from either was copied;
+see ATTRIBUTION.md.

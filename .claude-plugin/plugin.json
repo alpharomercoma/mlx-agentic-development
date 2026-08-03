@@ -1,0 +1,11 @@
+{
+  "name": "mlx-agentic-development",
+  "description": "Skills and agents for Apple MLX development: Metal kernels, M5 Neural Accelerator routing, quantization, and mlx-lm workflows.",
+  "author": {
+    "name": "Alpha Romer Coma",
+    "url": "https://github.com/alpharomercoma"
+  },
+  "homepage": "https://github.com/alpharomercoma/mlx-agentic-development",
+  "license": "Apache-2.0",
+  "keywords": ["mlx", "apple-silicon", "metal", "m5", "kernels", "quantization"]
+}
