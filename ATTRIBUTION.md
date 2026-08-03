@@ -14,7 +14,10 @@ script, no reference page, no prose was copied. What was borrowed is methodology
 - Per-stage role assignment across specialised agents.
 - Iteration caps and explicit blocked-state ladders.
 - Honesty rails separating what was measured from what was inferred.
-- A single canonical hardware-constants file with CI drift checking.
+- A single canonical hardware-constants file. (The Neuron and XLA kits pair this with
+  a CI drift check. This repo does **not**: the generator was never written and the CI
+  step silently no-opped, so the step was deleted and the constants are superseded by
+  runtime probe scripts instead.)
 - A dated verification ledger distinguishing executed claims from doc-derived ones.
 
 Amazon's copyright notice deliberately does **not** appear in `NOTICE`. Including it

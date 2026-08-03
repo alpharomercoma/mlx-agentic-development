@@ -35,6 +35,34 @@ tested that was not.
 | Whether NAX is *engaged* for a given op | The gate is confirmed and throughput is consistent with it, but MLX exposes no runtime switch to A/B the NAX path, so engagement per op is inferred rather than proven |
 | Claude Code and Codex plugin install end to end | Not yet installed from the marketplace in either client |
 
+## Coverage, stated as a limit
+
+The kit covers custom kernels, quantisation, core array semantics, compilation and
+transforms, performance routing, and mlx-lm basics. It does **not** cover `mlx.nn`
+(71 layer classes), `mlx.optimizers` (including `Muon` and `MultiOptimizer`), training
+loops, `mx.export_function`, serving internals, testing, packaging or Swift shipping,
+vision-language or audio, or `mx.distributed`. `mlx.nn` and `mlx.optimizers` are
+roughly half the Python package.
+
+Every hardware claim is from **one machine**: an Apple M5, 10-core GPU, 24 GB, macOS
+26.5.2. Nothing is verified on M1–M4, on a Pro/Max/Ultra part, or on the Linux/CUDA
+backend.
+
+## Superseded by probe scripts
+
+The measured constants below are retained for the record, but the authority has moved
+to the probe scripts, which re-derive them on the running machine at the installed
+version. Prefer running the script to trusting the table; MLX ships roughly every 2.5
+weeks and several of these figures are known to have moved upstream since.
+
+| Claim | Now derived by |
+|---|---|
+| NAX gate, chip architecture | `skills/mlx-env-setup/scripts/probe_mlx_env.py` |
+| quantize return arity, defaults | `skills/mlx-quantization/scripts/probe_quant_modes.py` |
+| quantisation error tolerances | `skills/mlx-quantization/scripts/measure_quant_error.py` |
+| kernel scalar binding by rank | `skills/mlx-metal-kernels/scripts/probe_kernel_binding.py` |
+| `mx.metal.*` deprecation set | `skills/mlx-performance/scripts/check_deprecations.py` |
+
 ## How to move an item up
 
 Run it, record the result here with a date. A documented failure is worth more than

@@ -1,4 +1,20 @@
-# Pilot (valid run, 2026-08-04)
+# Pilot (superseded — retained as a record)
+
+> **These numbers do not support any claim and are not a result.**
+>
+> Two reasons. First, this pilot ran against the kit as first written, which carried
+> nine dangling `references/` pointers, so arm C was sent to missing files on Complex
+> tasks — a handicap, not a fair measurement. Second, the reported 40% token
+> difference is **smaller than the observed within-cell spread** (bare `p07` spanned
+> 269k–484k on two runs), so at 2 repeats over 3 tasks it is indistinguishable from
+> noise.
+>
+> The runs are quarantined under `benchmark/results_prerepair/` and excluded from
+> analysis. What this pilot did establish is operational and still valid: the harness
+> works, the isolation holds, and the per-run cost and wall-clock figures used for
+> sizing are real.
+
+# Pilot (2026-08-04)
 
 3 tasks × 3 arms × 2 repeats = 18 runs, web search on. Codex 0.146.0,
 `gpt-5.6-terra`, effort medium.
@@ -31,7 +47,8 @@ the replacement, run after the workspace fix.
 
 ## Reading it
 
-**The placebo does nothing, which is the single most reassuring number here.** Arm B
+**The placebo does nothing.** That is the one directionally useful signal here, and
+it should be read cautiously: Arm B
 lands on the same pass rate as arm A and within 3% of its token cost, despite adding
 a prompt of the same size as the kit. So the arm-C effect is not a prompt-length
 artefact — which is exactly what arm B exists to establish, and it could easily have
