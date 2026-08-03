@@ -30,6 +30,7 @@ Schemas verified by execution against codex-cli 0.146.0 on 2026-08-04.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
@@ -78,12 +79,24 @@ def _iter_json_lines(path: Path):
             continue
 
 
+# Codex does not expose a dedicated "invoke skill" tool. It loads a skill body by
+# READING THE FILE from a shell command, e.g. `sed -n '1,240p' .../mlx-performance/
+# SKILL.md`. Detecting invocation therefore means looking for a SKILL.md path in
+# executed commands, not for a namespaced skill name in a tool call. The first pilot
+# reported zero invocations across every arm-C run purely because of this.
+_SKILL_PATH = re.compile(r"skills/([A-Za-z0-9_-]+)/SKILL\.md")
+
+
 def _collect_kit_skills(blob: str, kit_prefix: str, out: list[str]) -> None:
-    if not kit_prefix or kit_prefix not in blob:
-        return
-    for token in blob.replace("'", '"').split('"'):
-        if token.startswith(kit_prefix) and token not in out:
-            out.append(token)
+    for name in _SKILL_PATH.findall(blob):
+        if name not in out:
+            out.append(name)
+    # Claude Code namespaces skills as <plugin>:<skill> in tool calls, so that form
+    # is still checked.
+    if kit_prefix and kit_prefix in blob:
+        for token in blob.replace("'", '"').split('"'):
+            if token.startswith(kit_prefix) and token not in out:
+                out.append(token)
 
 
 def find_rollout(codex_home: Path, thread_id: str | None) -> Path | None:

@@ -1,0 +1,5 @@
+Created [solution.py](/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_A_s1_r0/scratch/workspace/solution.py:1).
+
+It uses a module-cached `mx.fast.metal_kernel` for `x * scale + bias`, preserving `x`’s shape and dtype. Empty tensors return directly to avoid a zero-sized Metal dispatch.
+
+Source parsing passed. Runtime verification could not run because MLX is not installed in the available Python environment.

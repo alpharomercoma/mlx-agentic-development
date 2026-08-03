@@ -1,0 +1,25 @@
+F.F
+=================================== FAILURES ===================================
+_____________________ test_returns_expected_keys_and_types _____________________
+../../grader/test_solution.py:37: in test_returns_expected_keys_and_types
+    assert proc.returncode == 0, f"solution failed to run:\n{proc.stderr[-800:]}"
+E   AssertionError: solution failed to run:
+E     Traceback (most recent call last):
+E       File "<string>", line 5, in <module>
+E       File "/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p07_memory_api_C_s1_r0/scratch/workspace/solution.py", line 12, in memory_report
+E         "device_name": str(mx.device_info()["name"]),
+E                            ~~~~~~~~~~~~~~~~^^^^^^^^
+E     KeyError: 'name'
+E     
+E   assert 1 == 0
+E    +  where 1 = CompletedProcess(args=['/Users/alpha/asic/.venv-mlx/bin/python', '-c', '\nimport json, sys\nsys.path.insert(0, sys.arg... "device_name": str(mx.device_info()["name"]),\n                       ~~~~~~~~~~~~~~~~^^^^^^^^\nKeyError: \'name\'\n').returncode
+________________________ test_device_name_is_plausible _________________________
+../../grader/test_solution.py:62: in test_device_name_is_plausible
+    line = [x for x in proc.stdout.splitlines() if x.startswith("REPORT_JSON:")][0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   IndexError: list index out of range
+=========================== short test summary info ============================
+FAILED ../../grader/test_solution.py::test_returns_expected_keys_and_types - ...
+FAILED ../../grader/test_solution.py::test_device_name_is_plausible - IndexEr...
+2 failed, 1 passed in 0.13s
+

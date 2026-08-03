@@ -39,6 +39,13 @@ DEFAULT_VENV_PY = Path("/Users/alpha/asic/.venv-mlx/bin/python")
 
 KIT_PREFIX = "mlx-agentic-development"
 
+# Agent workspaces MUST live outside the kit repository. Codex discovers repo-scoped
+# skills by walking up from the working directory to the repo root, so a workspace
+# nested inside the repo hands the kit to EVERY arm, including the bare control, and
+# silently destroys the experiment. This was observed in the first pilot: all three
+# arms read skills/mlx-*/SKILL.md by absolute path.
+WORKSPACE_ROOT = Path("/private/tmp/mlx-bench-workspaces")
+
 
 @dataclass
 class TrialResult:
@@ -70,6 +77,21 @@ def load_task(task_id: str) -> tuple[dict, str, Path, Path]:
     meta = json.loads((tdir / "meta.json").read_text())
     prompt = (tdir / "prompt.md").read_text()
     return meta, prompt, tdir / "workspace", tdir / "test_solution.py"
+
+
+def assert_outside_repo(task_dir: Path) -> None:
+    """Refuse to run if the agent's workspace sits inside the kit repository.
+
+    Codex walks up from the working directory to find repo-scoped `.agents/skills`.
+    A workspace inside the repo therefore leaks the kit into the control arm. Failing
+    loudly is the only safe behaviour: the resulting data looks completely normal.
+    """
+    resolved = task_dir.resolve()
+    if REPO.resolve() in resolved.parents or resolved == REPO.resolve():
+        raise RuntimeError(
+            f"workspace {resolved} is inside the kit repo {REPO}; every arm would "
+            "discover the kit through repo-scoped skill lookup"
+        )
 
 
 def prepare_workspace(src: Path, dest: Path) -> None:
@@ -247,9 +269,13 @@ def run_trial(
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True)
 
-    scratch = out_dir / "scratch"
+    scratch = WORKSPACE_ROOT / run_id
+    if scratch.exists():
+        shutil.rmtree(scratch)
+    scratch.mkdir(parents=True)
     task_dir = scratch / "workspace"
     prepare_workspace(ws_src, task_dir)
+    assert_outside_repo(task_dir)
 
     t0 = time.perf_counter()
     if harness == "codex":
@@ -297,8 +323,8 @@ def run_trial(
     (out_dir / "result.json").write_text(json.dumps(result.as_dict(), indent=2))
 
     # The per-arm CODEX_HOME holds a copy of auth.json; do not leave it lying around.
-    for home in scratch.glob("codex_home_*"):
-        shutil.rmtree(home, ignore_errors=True)
+    # The whole external scratch tree goes with it, now that sources are archived.
+    shutil.rmtree(scratch, ignore_errors=True)
 
     return result
 

@@ -1,0 +1,5 @@
+Created [solution.py](/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_B_s1_r0/scratch/workspace/solution.py).
+
+It exposes `fused_scale_bias`, using a cached `mx.fast.metal_kernel` to perform `x * scale + bias` in one GPU kernel launch. It preserves `x`’s shape and dtype, including empty tensors.
+
+Syntax checks passed. Runtime MLX verification was unavailable because MLX is not installed for the available Python interpreter.

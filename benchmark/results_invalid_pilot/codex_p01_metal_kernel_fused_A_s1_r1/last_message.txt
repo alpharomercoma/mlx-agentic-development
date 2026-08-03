@@ -1,0 +1,5 @@
+Created [solution.py](/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_A_s1_r1/scratch/workspace/solution.py).
+
+`fused_scale_bias` uses one module-level MLX Metal kernel for `x * scale + bias`, with shape/dtype preserved and no per-call kernel creation. I also handled empty arrays without a zero-sized GPU dispatch.
+
+I could not execute MLX validation here because `mlx` is not installed in the available Python environment.

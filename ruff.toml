@@ -5,7 +5,12 @@ target-version = "py310"
 # order is load-bearing: sys.path.insert(SOLUTION_DIR) must execute before
 # `import solution`, and import sorting would hoist the import above it and break
 # every grader. They are checked by running them, which is the real test.
+# Agent-produced code and archived run artefacts are DATA, not source. Linting them
+# is meaningless, and reformatting them would corrupt the record of what the agent
+# actually wrote.
 exclude = [
+    "benchmark/results/**",
+    "benchmark/results_invalid_pilot/**",
     "benchmark/tasks/*/test_solution.py",
     "benchmark/tasks/*/oracle/*.py",
     "benchmark/tasks/*/workspace/*.py",

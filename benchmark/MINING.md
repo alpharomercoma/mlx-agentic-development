@@ -166,3 +166,39 @@ be cheaper too. The sweep is therefore affordable but not comfortably so.
 Mitigation: run the web-search-`on` condition first because it carries the primary
 claim, checkpoint after every run, and record `used_percent` per run so the sweep can
 be paused before exhausting the window rather than dying partway through.
+
+## Invalidated first pilot — recorded, not hidden
+
+The first 18-run pilot (2026-08-04) was **discarded before analysis**. Its runs are
+kept under `benchmark/results_invalid_pilot/` rather than deleted.
+
+**Cause.** Agent workspaces were created at
+`benchmark/results/runs/<id>/scratch/workspace`, inside the kit repository. Codex
+discovers repo-scoped skills by walking up from the working directory to the repo
+root, so **every arm — including the bare control — found `.agents/skills` and read
+the real kit.** Confirmed in the transcripts: all three arms executed
+`sed -n '1,240p' .../skills/mlx-*/SKILL.md`.
+
+This is precisely the failure mode identified in Phase 1, which is why the kit is
+delivered out-of-band rather than repo-locally. It was reintroduced by storing run
+artefacts inside the repo. The validity gate did not catch it because the gate
+constructs its own workspace in a temporary directory, so the gate was testing a
+configuration the runner did not use.
+
+**Fixes.**
+1. Workspaces now live at `/private/tmp/mlx-bench-workspaces/<run_id>`, outside the
+   repo, and `assert_outside_repo()` raises before any run whose workspace is nested
+   in the repository. Failing loudly is the only safe behaviour here, because the
+   contaminated data looks entirely normal.
+2. The validity gate is no longer the only check; the guard runs on every trial.
+
+**Second bug, found in the same investigation.** The pilot reported
+`skills_invoked = []` for every arm-C run, which read as "the kit never fired".
+It had fired. **Codex has no dedicated skill-invocation tool: it loads a skill body
+by reading the file from a shell command.** The detector was looking for a namespaced
+skill name in tool-call payloads. It now matches `skills/<name>/SKILL.md` in executed
+commands. Had this gone unnoticed, the mechanism check would have declared the whole
+experiment uninterpretable.
+
+**Mining data is unaffected** and is retained: every mining run executed before the
+kit existed, so there was nothing to leak.

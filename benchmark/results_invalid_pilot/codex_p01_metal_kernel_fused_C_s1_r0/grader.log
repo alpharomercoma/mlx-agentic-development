@@ -1,0 +1,125 @@
+FFFFFFFF.
+=================================== FAILURES ===================================
+________________________ test_matches_reference[shape0] ________________________
+../../grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'; did you mean 'vec_elements'?
+E           if (index < n_elements) {
+E                       ^~~~~~~~~~
+E                       vec_elements
+E   /System/Library/PrivateFrameworks/GPUCompiler.framework/Versions/32023/Libraries/lib/clang/32023.884/include/metal/metal_type_traits:638:8: note: 'vec_elements' declared here
+E   struct vec_elements : _vec_elements_impl<remove_cv_t<T>>
+E          ^
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'
+E           if (index < n_elements) {
+E                       ^
+________________________ test_matches_reference[shape1] ________________________
+../../grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'; did you mean 'vec_elements'?
+E           if (index < n_elements) {
+E                       ^~~~~~~~~~
+E                       vec_elements
+E   /System/Library/PrivateFrameworks/GPUCompiler.framework/Versions/32023/Libraries/lib/clang/32023.884/include/metal/metal_type_traits:638:8: note: 'vec_elements' declared here
+E   struct vec_elements : _vec_elements_impl<remove_cv_t<T>>
+E          ^
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'
+E           if (index < n_elements) {
+E                       ^
+________________________ test_matches_reference[shape2] ________________________
+../../grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'; did you mean 'vec_elements'?
+E           if (index < n_elements) {
+E                       ^~~~~~~~~~
+E                       vec_elements
+E   /System/Library/PrivateFrameworks/GPUCompiler.framework/Versions/32023/Libraries/lib/clang/32023.884/include/metal/metal_type_traits:638:8: note: 'vec_elements' declared here
+E   struct vec_elements : _vec_elements_impl<remove_cv_t<T>>
+E          ^
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'
+E           if (index < n_elements) {
+E                       ^
+________________________ test_matches_reference[shape3] ________________________
+../../grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'; did you mean 'vec_elements'?
+E           if (index < n_elements) {
+E                       ^~~~~~~~~~
+E                       vec_elements
+E   /System/Library/PrivateFrameworks/GPUCompiler.framework/Versions/32023/Libraries/lib/clang/32023.884/include/metal/metal_type_traits:638:8: note: 'vec_elements' declared here
+E   struct vec_elements : _vec_elements_impl<remove_cv_t<T>>
+E          ^
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'
+E           if (index < n_elements) {
+E                       ^
+________________________ test_matches_reference[shape4] ________________________
+../../grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'; did you mean 'vec_elements'?
+E           if (index < n_elements) {
+E                       ^~~~~~~~~~
+E                       vec_elements
+E   /System/Library/PrivateFrameworks/GPUCompiler.framework/Versions/32023/Libraries/lib/clang/32023.884/include/metal/metal_type_traits:638:8: note: 'vec_elements' declared here
+E   struct vec_elements : _vec_elements_impl<remove_cv_t<T>>
+E          ^
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'
+E           if (index < n_elements) {
+E                       ^
+________________________ test_matches_reference[shape5] ________________________
+../../grader/test_solution.py:20: in test_matches_reference
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'; did you mean 'vec_elements'?
+E           if (index < n_elements) {
+E                       ^~~~~~~~~~
+E                       vec_elements
+E   /System/Library/PrivateFrameworks/GPUCompiler.framework/Versions/32023/Libraries/lib/clang/32023.884/include/metal/metal_type_traits:638:8: note: 'vec_elements' declared here
+E   struct vec_elements : _vec_elements_impl<remove_cv_t<T>>
+E          ^
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'
+E           if (index < n_elements) {
+E                       ^
+_______________________ test_non_multiple_of_threadgroup _______________________
+../../grader/test_solution.py:33: in test_non_multiple_of_threadgroup
+    mx.eval(got)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'; did you mean 'vec_elements'?
+E           if (index < n_elements) {
+E                       ^~~~~~~~~~
+E                       vec_elements
+E   /System/Library/PrivateFrameworks/GPUCompiler.framework/Versions/32023/Libraries/lib/clang/32023.884/include/metal/metal_type_traits:638:8: note: 'vec_elements' declared here
+E   struct vec_elements : _vec_elements_impl<remove_cv_t<T>>
+E          ^
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'
+E           if (index < n_elements) {
+E                       ^
+_________________________ test_no_uninitialised_output _________________________
+../../grader/test_solution.py:44: in test_no_uninitialised_output
+    mx.eval(ra)
+E   RuntimeError: [metal::Device] Unable to build metal library from source
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'; did you mean 'vec_elements'?
+E           if (index < n_elements) {
+E                       ^~~~~~~~~~
+E                       vec_elements
+E   /System/Library/PrivateFrameworks/GPUCompiler.framework/Versions/32023/Libraries/lib/clang/32023.884/include/metal/metal_type_traits:638:8: note: 'vec_elements' declared here
+E   struct vec_elements : _vec_elements_impl<remove_cv_t<T>>
+E          ^
+E   mlx/backend/metal/kernels/utils.h:450:21: error: use of undeclared identifier 'n_elements'
+E           if (index < n_elements) {
+E                       ^
+=========================== short test summary info ============================
+FAILED ../../grader/test_solution.py::test_matches_reference[shape0] - Runtim...
+FAILED ../../grader/test_solution.py::test_matches_reference[shape1] - Runtim...
+FAILED ../../grader/test_solution.py::test_matches_reference[shape2] - Runtim...
+FAILED ../../grader/test_solution.py::test_matches_reference[shape3] - Runtim...
+FAILED ../../grader/test_solution.py::test_matches_reference[shape4] - Runtim...
+FAILED ../../grader/test_solution.py::test_matches_reference[shape5] - Runtim...
+FAILED ../../grader/test_solution.py::test_non_multiple_of_threadgroup - Runt...
+FAILED ../../grader/test_solution.py::test_no_uninitialised_output - RuntimeE...
+8 failed, 1 passed in 0.17s
+

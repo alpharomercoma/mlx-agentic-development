@@ -1,0 +1,5 @@
+Created [solution.py](/Users/alpha/asic/mlx-agentic-development/benchmark/results/runs/codex_p01_metal_kernel_fused_C_s1_r0/scratch/workspace/solution.py).
+
+It defines a module-scoped `mx.fast.metal_kernel` and `fused_scale_bias(x, scale, bias)`, which dispatches the custom Metal kernel for `x * scale + bias`. Empty arrays return directly without a GPU dispatch.
+
+The file’s syntax and diff checks pass. Runtime MLX verification couldn’t run because MLX is not installed in the available Python environment.
