@@ -107,8 +107,19 @@ def main() -> int:
             f"{c['harness']}_{c['task']}_{c['arm']}"
             f"_s{int(c['web_search'])}_r{c['repeat']}"
         )
-        if (RESULTS / "runs" / rid / "result.json").is_file():
-            continue
+        # A cell counts as done only if it produced a USABLE result. A run that
+        # failed provider-side still writes result.json, so checkpointing on the
+        # file's existence alone turns every outage into a permanent hole in the
+        # dataset -- the cell is skipped forever on resume, and the arm silently
+        # ends up with fewer repeats than its neighbours.
+        done_file = RESULTS / "runs" / rid / "result.json"
+        if done_file.is_file():
+            try:
+                prev = json.loads(done_file.read_text())
+            except json.JSONDecodeError:
+                prev = {}
+            if not prev.get("error"):
+                continue
         todo.append(c)
 
     done = len(cells) - len(todo)
