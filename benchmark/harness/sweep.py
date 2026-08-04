@@ -132,26 +132,47 @@ def main() -> int:
     consecutive_errors = 0
     ABORT_AFTER = 3
 
+    # Transient provider outages are expected over a multi-day sweep -- one lasted
+    # about 15 minutes and failed every call with "Stream ended without
+    # finish_reason". A cell is retried through the backoff below before it counts
+    # as a failure, so a blip costs minutes rather than aborting the run; a genuine
+    # outage still exhausts the retries and trips the abort guard.
+    RETRY_BACKOFF_S = (60, 300)
+
     for i, c in enumerate(todo, 1):
         t0 = time.time()
-        try:
-            r = run_trial(
-                c["task"],
-                c["harness"],
-                c["arm"],
-                c["repeat"],
-                kit=args.kit.resolve(),
-                placebo=args.placebo.resolve(),
-                docs=args.docs.resolve(),
-                facts=args.facts.resolve(),
-                results_root=RESULTS,
-                model=args.model,
-                effort=args.effort,
-                provider=args.provider,
-                thinking=args.thinking,
-                web_search=c["web_search"],
-            )
-        except Exception as exc:  # noqa: BLE001 - a failed cell must not kill the sweep
+        r = None
+        exc = None
+        for attempt, backoff in enumerate((0, *RETRY_BACKOFF_S)):
+            if backoff:
+                print(
+                    f"    retrying in {backoff}s (attempt {attempt + 1})", flush=True
+                )
+                time.sleep(backoff)
+            try:
+                r = run_trial(
+                    c["task"],
+                    c["harness"],
+                    c["arm"],
+                    c["repeat"],
+                    kit=args.kit.resolve(),
+                    placebo=args.placebo.resolve(),
+                    docs=args.docs.resolve(),
+                    facts=args.facts.resolve(),
+                    results_root=RESULTS,
+                    model=args.model,
+                    effort=args.effort,
+                    provider=args.provider,
+                    thinking=args.thinking,
+                    web_search=c["web_search"],
+                )
+                exc = None
+            except Exception as e:  # noqa: BLE001 - a failed cell must not kill the sweep
+                r, exc = None, e
+            if r is not None and r.ok:
+                break
+
+        if exc is not None:
             print(f"[{i}/{len(todo)}] ERROR {c}: {exc}", flush=True)
             with log.open("a") as fh:
                 fh.write(json.dumps({**c, "error": str(exc)}) + "\n")
