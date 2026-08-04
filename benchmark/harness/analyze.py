@@ -66,6 +66,7 @@ def load_runs(results: Path, harness: str | None = None) -> list[dict]:
     """
     runs = []
     dropped = 0
+    errored = 0
     for rj in sorted((results / "runs").glob("*/result.json")):
         try:
             d = json.loads(rj.read_text())
@@ -78,6 +79,12 @@ def load_runs(results: Path, harness: str | None = None) -> list[dict]:
         if d.get("contamination"):
             dropped += 1
             continue
+        # Process- or provider-level failures are not task failures. Scoring a run
+        # the model never got to attempt would count an upstream outage as the arm
+        # being wrong.
+        if d.get("error"):
+            errored += 1
+            continue
         # Recomputed, not trusted: an earlier version keyed `graded` on the pytest
         # exit code, so it read False for every run with a failing test. Deriving it
         # from tests_total makes runs recorded before and after that fix consistent
@@ -86,6 +93,8 @@ def load_runs(results: Path, harness: str | None = None) -> list[dict]:
         runs.append(d)
     if dropped:
         print(f"NOTE: dropped {dropped} contaminated run(s) from the analysis")
+    if errored:
+        print(f"NOTE: dropped {errored} run(s) that failed process- or provider-side")
     return runs
 
 

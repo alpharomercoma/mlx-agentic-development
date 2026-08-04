@@ -426,6 +426,11 @@ def run_pi(
         err = stderr_path.read_text()[-500:]
 
     metrics, rate_limited = parse_pi(archived, f"{KIT_PREFIX}:")
+    if metrics.provider_error and not err:
+        err = (
+            f"provider error: {metrics.model_calls} model call(s) returned no "
+            "tokens (upstream stream failure); this run is not evidence about the arm"
+        )
     return metrics, timed_out, rate_limited, err
 
 

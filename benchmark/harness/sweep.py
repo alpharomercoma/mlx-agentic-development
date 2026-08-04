@@ -165,6 +165,26 @@ def main() -> int:
                 return 4
             continue
 
+        # A provider outage returns a *normal-looking* result: the trial completes,
+        # the grader finds nothing, and the cell records FAIL at 0 tokens. Counting
+        # that as a task failure would score an arm zero on a task it never
+        # attempted, so it feeds the abort counter rather than the dataset.
+        if not r.ok:
+            consecutive_errors += 1
+            print(
+                f"[{i}/{len(todo)}] RUN FAILED {c['task']} arm={c['arm']}: "
+                f"{(r.error or '')[:120]}",
+                flush=True,
+            )
+            if consecutive_errors >= ABORT_AFTER:
+                print(
+                    f"\nABORTING: {consecutive_errors} consecutive runs failed "
+                    "process- or provider-side. Fix the cause and resume.",
+                    file=sys.stderr,
+                )
+                return 4
+            continue
+
         consecutive_errors = 0
 
         rid = (

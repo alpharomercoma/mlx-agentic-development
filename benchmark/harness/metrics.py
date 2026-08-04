@@ -56,6 +56,9 @@ class RunMetrics:
     turns: int = 0
     tool_calls: int = 0
     cost_usd: float | None = None
+    # True when the CLI produced model calls that all failed provider-side. Such a
+    # run is not evidence about the arm and must not be scored as a task failure.
+    provider_error: bool = False
     # Kit skills the agent actually invoked. If this stays empty in the treatment
     # arm, the kit never fired, and any measured difference came from prompt length
     # rather than from the kit's content. This is the check that makes the headline
@@ -227,6 +230,15 @@ def parse_pi(stream_path: Path, kit_prefix: str) -> tuple[RunMetrics, bool]:
             # a run that ends still wanting to retry did not finish cleanly.
             if d.get("willRetry"):
                 rate_limited = True
+
+    # A provider failure must never be scored as a task failure. When
+    # deepseek-v4-flash went down mid-sweep it returned four assistant messages,
+    # every one with stopReason "error" and errorMessage "Stream ended without
+    # finish_reason", zero tokens, and no tool calls -- and the trial recorded a
+    # clean FAIL at 0 tokens after 1,180 seconds. Counted naively that is an arm
+    # scoring zero on a task it never attempted.
+    if m.model_calls and m.total_tokens == 0:
+        m.provider_error = True
 
     if saw_cost:
         m.cost_usd = cost
