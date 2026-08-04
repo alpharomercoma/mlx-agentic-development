@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import time
@@ -533,6 +534,32 @@ def parse_speedup(out_dir: Path) -> float | None:
     return float(m.group(1)) if m else None
 
 
+def model_slug(model: str) -> str:
+    """Filesystem-safe short form of a model id."""
+    return re.sub(r"[^A-Za-z0-9]+", "-", model).strip("-").lower()
+
+
+def make_run_id(
+    harness: str,
+    task_id: str,
+    arm_id: str,
+    web_search: bool,
+    repeat: int,
+    model: str,
+) -> str:
+    """Unique id for a cell, INCLUDING the model.
+
+    The model has to be in the identity. Without it, running a second model reuses
+    the same directory names and silently overwrites the first model's results --
+    the sweep would even report those cells as already done. Codex runs keep their
+    original names because that sweep is complete and its ids are referenced in
+    RESULTS.md; nothing reads the model back out of a directory name, since every
+    field is recorded inside result.json.
+    """
+    base = f"{harness}_{task_id}_{arm_id}_s{int(web_search)}_r{repeat}"
+    return base if harness == "codex" else f"{base}_{model_slug(model)}"
+
+
 def run_trial(
     task_id: str,
     harness: str,
@@ -556,7 +583,7 @@ def run_trial(
     timeout = int(meta.get("timeout_s", 900))
     arm = build_arms(kit, placebo, docs, facts)[arm_id]
 
-    run_id = f"{harness}_{task_id}_{arm_id}_s{int(web_search)}_r{repeat}"
+    run_id = make_run_id(harness, task_id, arm_id, web_search, repeat, model)
     out_dir = results_root / "runs" / run_id
     if out_dir.exists():
         shutil.rmtree(out_dir)

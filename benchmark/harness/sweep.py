@@ -24,7 +24,7 @@ import sys
 import time
 from pathlib import Path
 
-from run import REPO, preflight_clean, run_trial
+from run import REPO, make_run_id, preflight_clean, run_trial
 
 RESULTS = REPO / "benchmark" / "results"
 
@@ -103,9 +103,8 @@ def main() -> int:
 
     todo = []
     for c in cells:
-        rid = (
-            f"{c['harness']}_{c['task']}_{c['arm']}"
-            f"_s{int(c['web_search'])}_r{c['repeat']}"
+        rid = make_run_id(
+            c["harness"], c["task"], c["arm"], c["web_search"], c["repeat"], args.model
         )
         # A cell counts as done only if it produced a USABLE result. A run that
         # failed provider-side still writes result.json, so checkpointing on the
@@ -219,9 +218,8 @@ def main() -> int:
 
         consecutive_errors = 0
 
-        rid = (
-            f"{c['harness']}_{c['task']}_{c['arm']}"
-            f"_s{int(c['web_search'])}_r{c['repeat']}"
+        rid = make_run_id(
+            c["harness"], c["task"], c["arm"], c["web_search"], c["repeat"], args.model
         )
         used = read_used_percent(RESULTS / "runs" / rid)
         elapsed = time.time() - t0

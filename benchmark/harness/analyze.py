@@ -48,7 +48,9 @@ N_PERM = 10_000
 # --------------------------------------------------------------------------- io
 
 
-def load_runs(results: Path, harness: str | None = None) -> list[dict]:
+def load_runs(
+    results: Path, harness: str | None = None, model: str | None = None
+) -> list[dict]:
     """Scored sweep runs only.
 
     Mining runs live in the same directory but are baseline exploration, not scored
@@ -75,6 +77,11 @@ def load_runs(results: Path, harness: str | None = None) -> list[dict]:
         if "web_search" not in d:
             continue
         if harness and d.get("harness") != harness:
+            continue
+        # Models are never pooled. Different models differ in capability, price and
+        # token accounting, so averaging them would produce a contrast that is
+        # partly about which model happened to run the cell.
+        if model and d.get("model") != model:
             continue
         if d.get("contamination"):
             dropped += 1
@@ -260,9 +267,14 @@ def main() -> int:
         choices=["codex", "claude", "pi"],
         help="token metrics are not comparable across harnesses; analyse one at a time",
     )
+    ap.add_argument(
+        "--model",
+        default=None,
+        help="analyse a single model; models are never pooled",
+    )
     args = ap.parse_args()
 
-    runs = load_runs(args.results, args.harness)
+    runs = load_runs(args.results, args.harness, args.model)
     if not runs:
         print("no runs found")
         return 1
