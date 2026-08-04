@@ -104,24 +104,62 @@ FIXTURE_MARKERS = ("oracle", "cheat", "kit", "placebo", "solution", "gold")
 
 
 def preflight_clean(root: Path = WORKSPACE_ROOT) -> list[Path]:
-    """Refuse to run if fixture-shaped directories sit near the workspaces.
+    """Refuse to run if fixture- or kit-shaped directories sit in any temp tree.
 
-    Agents explore. The first 250-run sweep lost ten runs to leftover test fixtures
-    in /private/tmp -- among them directories holding the gold solutions, which two
-    arm-A runs read before passing a task the bare model never passes. Cleaning up by
-    hand is not a control; this is.
+    Agents explore. This guard exists because they keep finding things:
+
+      incident 3  ten runs of the Codex sweep found leftover fixtures beside the
+                  workspaces in /private/tmp -- including gold solutions -- and
+                  seven read them.
+      incident 4  a pi pilot's BARE arm read a full copy of the kit out of
+                  `$TMPDIR/dbg2-*/pi_C/pi_skills_C/skills/mlx-metal-kernels/SKILL.md`,
+                  left behind by the harness author's own debugging.
+
+    Both were self-inflicted debris, and in both cases the data looked normal. So
+    the scan covers the macOS per-user temp directory as well as /private/tmp.
+
+    The test is on **content, not names**. A name-based rule is both too loose and
+    too tight here: it flags Apple's own `com.apple.pluginkit` and `StatusKitAgent`
+    temp directories on the word "kit", and the empty `solution-pyc*` pycache
+    prefixes agents leave behind, while still missing `dbg2-mvo44mk2`. So a
+    directory is an offender only if it actually holds answer-bearing files.
     """
-    parent = root.parent
-    if not parent.is_dir():
-        return []
-    offenders = []
-    for entry in parent.iterdir():
-        if entry == root or not entry.is_dir():
+    import tempfile
+
+    hazards = ("SKILL.md", "solution.py", "test_solution.py")
+    roots = {root.parent, Path(tempfile.gettempdir()), Path("/private/tmp")}
+    offenders: list[Path] = []
+    for parent in roots:
+        if not parent.is_dir():
             continue
-        name = entry.name.lower()
-        if any(m in name for m in FIXTURE_MARKERS):
-            offenders.append(entry)
-    return offenders
+        try:
+            entries = list(parent.iterdir())
+        except (PermissionError, OSError):
+            continue
+        for entry in entries:
+            if not entry.is_dir():
+                continue
+            # Skip the workspace tree itself. Live runs legitimately contain the
+            # agent's own solution.py, and /private/tmp/mlx-bench is an entry of
+            # /private/tmp, so without this the guard reports itself every time.
+            if entry == root or entry == root.parent or root == entry or root.is_relative_to(entry):
+                continue
+            try:
+                # Bounded walk: a kit copy sits within a few levels of the top, and
+                # an unbounded scan of $TMPDIR on every trial is not affordable.
+                found = False
+                for depth in ("*", "*/*", "*/*/*", "*/*/*/*", "*/*/*/*/*"):
+                    for h in hazards:
+                        if next(entry.glob(f"{depth}/{h}"), None) is not None:
+                            found = True
+                            break
+                    if found:
+                        break
+                if found:
+                    offenders.append(entry)
+            except (PermissionError, OSError):
+                continue
+    return sorted(set(offenders))
 
 
 def assert_outside_repo(task_dir: Path) -> None:
@@ -139,7 +177,11 @@ def assert_outside_repo(task_dir: Path) -> None:
         )
 
 
-def audit_contamination(out_dir: Path) -> list[str]:
+def audit_contamination(
+    out_dir: Path,
+    workspace: Path | None = None,
+    skills_dir: Path | None = None,
+) -> list[str]:
     """Scan a finished run's tool calls for anything it should not have reached.
 
     The sandbox is the enforcement; this is the evidence. A guard that is never
@@ -150,13 +192,22 @@ def audit_contamination(out_dir: Path) -> list[str]:
 
     Matches are on the *invocation*, not on tool output: the repo path appearing in
     a file the agent legitimately read is not the agent reaching for the repo.
+
+    Scoping matters in both directions, and the first version got both wrong. It
+    flagged the agent writing its own `solution.py` and `_test_solution.py` -- which
+    the task asks for -- while completely missing a bare arm reading the kit out of
+    `$TMPDIR/dbg2-*/.../skills/mlx-metal-kernels/SKILL.md`, because that path
+    contained none of the marker words. Name-shaped rules cannot catch a directory
+    called `dbg2-mvo44mk2`.
+
+    So the rule is positional: a path is an offence when it points at answer-bearing
+    material *outside* the run's own workspace, plus any `skills/` path that is not
+    the arm's own injected kit. `workspace` and `skills_dir` must be passed for that
+    distinction to exist at all.
     """
-    markers = (
-        str(REPO.resolve()),
-        "test_solution",
-        "/oracle/",
-        "solution.py",
-    )
+    answers = ("test_solution", "/oracle/", "solution.py", "gold")
+    ws = str(workspace.resolve()) if workspace else None
+    own_skills = str(skills_dir.resolve()) if skills_dir else None
     offenders: list[str] = []
     for stream_name in ("stream.jsonl", "events.jsonl"):
         stream = out_dir / stream_name
@@ -172,12 +223,39 @@ def audit_contamination(out_dir: Path) -> list[str]:
                 continue
             if ev.get("type") != "tool_execution_start":
                 continue
-            blob = json.dumps(ev.get("args") or {})
-            for m in markers:
-                if m in blob:
-                    offenders.append(f"{ev.get('toolName')}: {m}")
-                    break
+            tool = ev.get("toolName")
+            for path in _paths_in(ev.get("args") or {}):
+                if str(REPO.resolve()) in path:
+                    offenders.append(f"{tool}: repo {path}")
+                    continue
+                if "/skills/" in path or path.endswith("SKILL.md"):
+                    if not (own_skills and path.startswith(own_skills)):
+                        offenders.append(f"{tool}: foreign kit {path}")
+                    continue
+                if any(a in path.lower() for a in answers):
+                    if not (ws and path.startswith(ws)):
+                        offenders.append(f"{tool}: answer material {path}")
     return offenders
+
+
+def _paths_in(args: dict) -> list[str]:
+    """Every filesystem-path-looking string in a tool invocation.
+
+    Bash commands are the awkward case: the path is embedded in a command line, not
+    in a `path` argument, so the whole command is scanned for absolute-path tokens.
+    """
+    import re as _re
+
+    out: list[str] = []
+    for value in args.values():
+        if not isinstance(value, str):
+            out.extend(
+                v for v in (json.dumps(value),) if isinstance(v, str)
+            )
+            continue
+        out.append(value)
+    text = " ".join(out)
+    return _re.findall(r"/[A-Za-z0-9_./\-]{4,}", text)
 
 
 def audit_network(out_dir: Path) -> list[str]:
@@ -272,6 +350,9 @@ def run_codex(
     return metrics, timed_out, False, err
 
 
+PI_SKILLS_DIR: Path | None = None
+
+
 def run_pi(
     arm: Arm,
     prompt: str,
@@ -284,7 +365,9 @@ def run_pi(
     scratch: Path,
     venv_py: Path,
 ) -> tuple[RunMetrics, bool, bool, str | None]:
+    global PI_SKILLS_DIR
     skills_dir = prepare_pi_skills(arm, scratch)
+    PI_SKILLS_DIR = skills_dir
 
     # pi has no sandbox of its own, so one is imposed. See pi_sandbox_profile: the
     # first pilot's bare arm read the hidden grader and ran it. Written per run so
@@ -481,6 +564,16 @@ def run_trial(
     prepare_workspace(ws_src, task_dir)
     assert_outside_repo(task_dir)
 
+    # Checked per trial, not once per sweep. Incident 3's fixtures and incident 4's
+    # kit copy both appeared *during* a run of work, so a single check at startup
+    # would have passed and the sweep would have carried on reading them. 0.3s.
+    offenders = preflight_clean()
+    if offenders:
+        raise RuntimeError(
+            "answer-bearing directories are readable near the workspace: "
+            + ", ".join(str(o) for o in offenders)
+        )
+
     t0 = time.perf_counter()
     if harness == "codex":
         metrics, timed_out, rate_limited, err = run_codex(
@@ -507,8 +600,9 @@ def run_trial(
         raise ValueError(f"unknown harness {harness}")
     wall = time.perf_counter() - t0
 
+    pi_skills_dir = PI_SKILLS_DIR if harness == "pi" else None
     graded, tp, tt = grade(test_file, task_dir, out_dir, venv_py)
-    offenders = audit_contamination(out_dir)
+    offenders = audit_contamination(out_dir, task_dir, pi_skills_dir)
     net_hits = audit_network(out_dir)
 
     # Archive what the agent actually produced.
