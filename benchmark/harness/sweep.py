@@ -124,6 +124,14 @@ def main() -> int:
     log.parent.mkdir(parents=True, exist_ok=True)
 
     started = time.time()
+    # A bug in the per-trial code path shows up only after a cell finishes, and the
+    # loop deliberately swallows exceptions so one bad cell cannot kill a long
+    # sweep. Those two facts together mean a NameError can burn all 250 cells while
+    # looking like progress -- which is exactly what happened on the first pi launch
+    # (`name 'net' is not defined`, every cell). If nothing succeeds early, stop.
+    consecutive_errors = 0
+    ABORT_AFTER = 3
+
     for i, c in enumerate(todo, 1):
         t0 = time.time()
         try:
@@ -147,7 +155,17 @@ def main() -> int:
             print(f"[{i}/{len(todo)}] ERROR {c}: {exc}", flush=True)
             with log.open("a") as fh:
                 fh.write(json.dumps({**c, "error": str(exc)}) + "\n")
+            consecutive_errors += 1
+            if consecutive_errors >= ABORT_AFTER:
+                print(
+                    f"\nABORTING: {consecutive_errors} consecutive cells failed. "
+                    "This is a harness bug, not a flaky run; fix it and resume.",
+                    file=sys.stderr,
+                )
+                return 4
             continue
+
+        consecutive_errors = 0
 
         rid = (
             f"{c['harness']}_{c['task']}_{c['arm']}"

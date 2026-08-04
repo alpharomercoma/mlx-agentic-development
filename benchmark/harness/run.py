@@ -271,6 +271,7 @@ def audit_network(out_dir: Path) -> list[str]:
     the runs where the model worked hardest, biasing the sample toward easy cells.
     It is a caveat to report, not invalid data.
     """
+    net = ("curl ", "wget ", "urllib", "requests.get", "httpx", "pip install")
     hits: list[str] = []
     for stream_name in ("stream.jsonl", "events.jsonl"):
         stream = out_dir / stream_name
