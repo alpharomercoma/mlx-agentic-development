@@ -112,6 +112,37 @@ CLAUDE_COMMON_FLAGS: tuple[str, ...] = (
 )
 
 
+# Flags shared by every pi arm. Identical across arms by construction.
+#
+#   --no-skills          suppresses skill *discovery* only. Verified in
+#                        core/resource-loader.js: with noSkills set, skillPaths
+#                        collapses to the explicitly-passed --skill paths, and
+#                        loadSkills runs with includeDefaults:false. So arm A gets
+#                        zero skills and arm C gets exactly the kit -- no other
+#                        skill on this machine (superpowers et al.) can leak in.
+#   --no-context-files   suppresses AGENTS.md / CLAUDE.md discovery
+#   --no-extensions      an extension could register tools, changing the action space
+#   --no-prompt-templates
+#   --no-session         a session reused across arms is a contamination path, and
+#                        ephemeral runs cannot resume into each other
+#
+# pi ships bash/read/write/edit/grep/ls/find and NO web-search tool, so every pi
+# arm is inherently a search-off condition. That is not a defect here: the Codex
+# search-off cell was quota-blocked, and this supplies the same factor on a second
+# model. Curl-through-bash remains possible, so the harness measures network use
+# rather than assuming its absence.
+PI_COMMON_FLAGS: tuple[str, ...] = (
+    "--print",
+    "--mode",
+    "json",
+    "--no-session",
+    "--no-skills",
+    "--no-context-files",
+    "--no-extensions",
+    "--no-prompt-templates",
+)
+
+
 @dataclass(frozen=True)
 class Arm:
     """One experimental condition."""
@@ -208,6 +239,94 @@ def codex_command(
         *codex_flags(web_search),
         prompt,
     ]
+
+
+def prepare_pi_skills(arm: Arm, root: Path) -> Path | None:
+    """Materialise a per-arm skills directory outside the repo, or None for bare.
+
+    pi accepts `--skill <dir>` pointing anywhere, so the obvious move is to point it
+    straight at the kit in the repo. That was rejected: the catalog hands the agent
+    an absolute *filesystem path*, and the kit lives two directories above
+    `benchmark/tasks/*/oracle/solution.py`. Arm C would be one `ls ..` from the gold
+    solutions -- the same class of leak that invalidated the first Codex pilot.
+
+    Copying also freezes the arm's content, so editing the kit mid-sweep cannot
+    retroactively change a completed run.
+    """
+    if arm.kit_path is None:
+        return None
+
+    src_skills = arm.kit_path / "skills"
+    if not src_skills.is_dir():
+        raise FileNotFoundError(f"{src_skills} does not exist")
+
+    dest = root / f"pi_skills_{arm.id}" / "skills"
+    if dest.parent.exists():
+        shutil.rmtree(dest.parent)
+    dest.mkdir(parents=True)
+    for skill_dir in sorted(p for p in src_skills.iterdir() if p.is_dir()):
+        shutil.copytree(skill_dir, dest / skill_dir.name)
+    return dest
+
+
+def pi_sandbox_profile(repo: Path, venv: Path) -> str:
+    """A macOS seatbelt profile that hides the benchmark repo from the agent.
+
+    This is not optional hardening; without it the pi arms are uninterpretable.
+    Codex runs under `--sandbox workspace-write`, so its agents physically cannot
+    read outside the workspace. **pi ships no sandbox**, and its bash tool inherits
+    the full permissions of the user. The first pi pilot demonstrated the
+    consequence: the bare arm listed the repo, read `run.py`, read the docs-kit,
+    read the hidden grader `test_solution.py`, and finally ran pytest against the
+    real grader to check its own work. It "passed" 9/9.
+
+    Worse, the contamination was *differential* -- arm C, which had the kit, never
+    went looking, so the bare arm alone was inflated. A control that cheats and a
+    treatment that does not is the one asymmetry that can move a result in either
+    direction while looking entirely normal in the logs.
+
+    `allow default` with a targeted deny is used rather than an allow-list because
+    the agent legitimately needs the Metal stack, the GPU device, system frameworks
+    and its own venv; enumerating that surface is fragile, whereas the thing that
+    must never be readable is exactly one subtree. The venv is re-allowed because it
+    sits under the same parent as the repo.
+    """
+    return "\n".join(
+        [
+            "(version 1)",
+            "(allow default)",
+            f'(deny file-read* (subpath "{repo.resolve()}"))',
+            f'(allow file-read* (subpath "{venv.resolve()}"))',
+        ]
+    )
+
+
+def pi_command(
+    arm: Arm,
+    prompt: str,
+    model: str,
+    provider: str,
+    thinking: str,
+    skills_dir: Path | None,
+    sandbox_profile: Path | None = None,
+) -> list[str]:
+    cmd: list[str] = []
+    if sandbox_profile is not None:
+        cmd += ["sandbox-exec", "-f", str(sandbox_profile)]
+    cmd += [
+        "pi",
+        "--provider",
+        provider,
+        "--model",
+        model,
+        "--thinking",
+        thinking,
+        *PI_COMMON_FLAGS,
+    ]
+    if skills_dir is not None:
+        cmd += ["--skill", str(skills_dir)]
+    cmd.append(prompt)
+    return cmd
 
 
 def claude_command(arm: Arm, prompt: str, model: str, max_usd: float) -> list[str]:

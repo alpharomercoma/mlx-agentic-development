@@ -34,7 +34,14 @@ import sys
 import tempfile
 from pathlib import Path
 
-from arms import CODEX_COMMON_FLAGS, KIT_TOKENS, build_arms, prepare_codex_home
+from arms import (
+    CODEX_COMMON_FLAGS,
+    KIT_TOKENS,
+    build_arms,
+    pi_command,
+    prepare_codex_home,
+    prepare_pi_skills,
+)
 
 CODEX_AUTH = Path.home() / ".codex" / "auth.json"
 
@@ -177,10 +184,160 @@ def check_claude(kit: Path, workdir: Path) -> None:
         notes.append("claude arm C enumerates kit skills")
 
 
+def check_pi(
+    kit: Path,
+    placebo: Path,
+    docs: Path | None,
+    facts: Path | None,
+    workdir: Path,
+    provider: str,
+    model: str,
+) -> None:
+    """Verify the pi arms behaviourally, and measure what each one injects.
+
+    pi has no `codex debug prompt-input` equivalent, so the prompt is probed rather
+    than rendered: each arm is asked to enumerate its own skills with tools denied,
+    and the first model call's `input` token count is recorded as the prompt size.
+    That count is the quantity that actually matters -- it is what the arm pays
+    before doing any work -- and it is measured, not estimated from file sizes.
+
+    Every arm is checked, not just A and C. The Codex sweep reported the mechanism
+    for arm C alone at first, which is precisely the asymmetry that would let a
+    control arm quietly load something and go unnoticed.
+    """
+    q = (
+        "List the exact names of every skill available to you right now as a bare "
+        "comma-separated list. Do not use any tools. If none, reply exactly: NONE"
+    )
+    task_dir = workdir / "taskdir"
+    arms = build_arms(kit, placebo, docs, facts)
+
+    def probe(arm, skills_dir) -> tuple[str, int]:
+        """One probe: returns (assistant text, prompt tokens for the first call)."""
+        cmd = pi_command(arm, q, model, provider, "off", skills_dir)
+        proc = subprocess.run(
+            cmd, cwd=task_dir, capture_output=True, text=True, timeout=300
+        )
+        if proc.returncode != 0:
+            failures.append(f"pi arm {arm.id} failed: {proc.stderr.strip()[:200]}")
+            return "", 0
+        text, prompt_tokens = "", 0
+        for line in proc.stdout.splitlines():
+            line = line.strip()
+            if not line.startswith("{"):
+                continue
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if ev.get("type") != "message_end":
+                continue
+            msg = ev.get("message") or {}
+            if msg.get("role") != "assistant":
+                continue
+            usage = msg.get("usage") or {}
+            if usage and not prompt_tokens:
+                prompt_tokens = (usage.get("input") or 0) + (usage.get("cacheRead") or 0)
+            for block in msg.get("content") or []:
+                if isinstance(block, dict) and block.get("type") == "text":
+                    text += block.get("text") or ""
+        return text, prompt_tokens
+
+    sizes: dict[str, int] = {}
+    for arm_id in sorted(arms):
+        arm = arms[arm_id]
+        skills_dir = prepare_pi_skills(arm, workdir / f"pi_{arm_id}")
+        expected = (
+            sorted(p.name for p in skills_dir.iterdir() if p.is_dir())
+            if skills_dir
+            else []
+        )
+
+        # The model is asked to introspect, and deepseek-v4-flash answers this
+        # meta-question unreliably: an arm that demonstrably carries its catalog
+        # still sometimes replies NONE. Injection is therefore proven structurally
+        # by the token delta below; this probe corroborates that the catalog is
+        # visible, and gets three attempts before it is called a failure. One
+        # correct enumeration is sufficient evidence of visibility.
+        text, prompt_tokens = "", 0
+        for _ in range(3):
+            text, prompt_tokens = probe(arm, skills_dir)
+            if not expected or any(n.lower() in text.lower() for n in expected):
+                break
+
+        sizes[arm_id] = prompt_tokens
+        low = text.lower()
+        # Assert against the arm's OWN skill names, not KIT_TOKENS. Arms D and E
+        # ship `mlx-docs` and `mlx-facts`, neither of which is a kit token, so a
+        # KIT_TOKENS check marks a correctly-injected control as broken.
+        own = expected
+        named = [n for n in own if n.lower() in low]
+        leaked = [t for t in KIT_TOKENS if t.lower() in low]
+
+        if arm.kit_path is None:
+            # The bare arm must name nothing from ANY arm, not merely nothing MLX.
+            if leaked or "none" not in low:
+                failures.append(
+                    f"pi arm {arm_id} (bare) did not report NONE; leaked={leaked}"
+                )
+            else:
+                notes.append(f"pi arm {arm_id} bare: reports NONE, 0 kit tokens")
+        elif arm_id == "B":
+            # The placebo must inject its own skills while naming nothing MLX-shaped.
+            if leaked:
+                failures.append(f"pi arm B (placebo) leaked kit tokens: {leaked}")
+            elif not named:
+                failures.append("pi arm B enumerates none of its own skills")
+            else:
+                notes.append(f"pi arm B placebo: {len(named)}/{len(own)} injected, no MLX")
+        elif not named:
+            failures.append(
+                f"pi arm {arm_id} enumerates none of its own skills {own}"
+            )
+        else:
+            notes.append(f"pi arm {arm_id}: {len(named)}/{len(own)} skills enumerated")
+
+    # The deterministic check. Every content arm must pay strictly more prompt
+    # tokens than bare, because its catalog is injected before any work happens.
+    # This does not depend on the model choosing to answer a meta-question, so it
+    # is the assertion the gate actually rests on.
+    bare = sizes.get("A", 0)
+    if bare:
+        for arm_id in sorted(sizes):
+            if arm_id == "A":
+                continue
+            delta = sizes[arm_id] - bare
+            if delta < 50:
+                failures.append(
+                    f"pi arm {arm_id} prompt is only {delta} tokens over bare "
+                    f"({sizes[arm_id]} vs {bare}); its content is not reaching the model"
+                )
+            else:
+                notes.append(f"pi arm {arm_id} injects +{delta:,} prompt tokens over bare")
+    notes.append(
+        "pi prompt tokens by arm: "
+        + ", ".join(f"{a}={sizes[a]:,}" for a in sorted(sizes))
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--kit", required=True, type=Path)
     ap.add_argument("--placebo", required=True, type=Path)
+    ap.add_argument("--docs", type=Path)
+    ap.add_argument("--facts", type=Path)
+    ap.add_argument(
+        "--check-pi",
+        action="store_true",
+        help="also verify the pi arms (spends a few tokens)",
+    )
+    ap.add_argument("--pi-provider", default="opencode-go")
+    ap.add_argument("--pi-model", default="deepseek-v4-flash")
+    ap.add_argument(
+        "--skip-codex",
+        action="store_true",
+        help="skip the Codex checks (for a pi-only run)",
+    )
     ap.add_argument(
         "--check-claude",
         action="store_true",
@@ -191,8 +348,21 @@ def main() -> int:
 
     workdir = Path(tempfile.mkdtemp(prefix="validity-gate-"))
     try:
-        check_codex(args.kit.resolve(), args.placebo.resolve(), workdir)
+        if not args.skip_codex:
+            check_codex(args.kit.resolve(), args.placebo.resolve(), workdir)
+        else:
+            (workdir / "taskdir").mkdir(parents=True, exist_ok=True)
         check_workspace_clean(workdir / "taskdir")
+        if args.check_pi:
+            check_pi(
+                args.kit.resolve(),
+                args.placebo.resolve(),
+                args.docs.resolve() if args.docs else None,
+                args.facts.resolve() if args.facts else None,
+                workdir,
+                args.pi_provider,
+                args.pi_model,
+            )
         if args.check_claude:
             check_claude(args.kit.resolve(), workdir)
     finally:

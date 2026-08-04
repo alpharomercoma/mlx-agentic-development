@@ -29,8 +29,17 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from arms import Arm, build_arms, claude_command, codex_command, prepare_codex_home
-from metrics import RunMetrics, parse_claude, parse_codex
+from arms import (
+    Arm,
+    build_arms,
+    claude_command,
+    codex_command,
+    pi_command,
+    pi_sandbox_profile,
+    prepare_codex_home,
+    prepare_pi_skills,
+)
+from metrics import RunMetrics, parse_claude, parse_codex, parse_pi
 
 REPO = Path(__file__).resolve().parents[2]
 TASKS_DIR = REPO / "benchmark" / "tasks"
@@ -72,6 +81,9 @@ class TrialResult:
     metrics: dict
     rate_limited: bool
     error: str | None = None
+    # Tool invocations that reached outside the workspace. Must be empty; a
+    # non-empty list means the run is evidence about the harness, not the kit.
+    contamination: list = None
 
     def as_dict(self) -> dict:
         d = self.__dict__.copy()
@@ -123,6 +135,47 @@ def assert_outside_repo(task_dir: Path) -> None:
             f"workspace {resolved} is inside the kit repo {REPO}; every arm would "
             "discover the kit through repo-scoped skill lookup"
         )
+
+
+def audit_contamination(out_dir: Path) -> list[str]:
+    """Scan a finished run's tool calls for anything it should not have reached.
+
+    The sandbox is the enforcement; this is the evidence. A guard that is never
+    verified is indistinguishable from one that silently stopped working, and this
+    experiment has already lost three datasets to leaks that looked normal in the
+    logs. Every run therefore carries its own proof, and the sweep can report a
+    contamination count instead of relying on a grep someone remembered to run.
+
+    Matches are on the *invocation*, not on tool output: the repo path appearing in
+    a file the agent legitimately read is not the agent reaching for the repo.
+    """
+    markers = (
+        str(REPO.resolve()),
+        "test_solution",
+        "/oracle/",
+        "solution.py",
+    )
+    offenders: list[str] = []
+    for stream_name in ("stream.jsonl", "events.jsonl"):
+        stream = out_dir / stream_name
+        if not stream.is_file():
+            continue
+        for line in stream.read_text(errors="replace").splitlines():
+            line = line.strip()
+            if not line.startswith("{"):
+                continue
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if ev.get("type") != "tool_execution_start":
+                continue
+            blob = json.dumps(ev.get("args") or {})
+            for m in markers:
+                if m in blob:
+                    offenders.append(f"{ev.get('toolName')}: {m}")
+                    break
+    return offenders
 
 
 def prepare_workspace(src: Path, dest: Path) -> None:
@@ -179,6 +232,66 @@ def run_codex(
         shutil.copy2(rollout, out_dir / "rollout.jsonl")
 
     return metrics, timed_out, False, err
+
+
+def run_pi(
+    arm: Arm,
+    prompt: str,
+    task_dir: Path,
+    out_dir: Path,
+    model: str,
+    provider: str,
+    thinking: str,
+    timeout: int,
+    scratch: Path,
+    venv_py: Path,
+) -> tuple[RunMetrics, bool, bool, str | None]:
+    skills_dir = prepare_pi_skills(arm, scratch)
+
+    # pi has no sandbox of its own, so one is imposed. See pi_sandbox_profile: the
+    # first pilot's bare arm read the hidden grader and ran it. Written per run so
+    # the profile is archived with the evidence rather than assumed.
+    profile = scratch / "sandbox.sb"
+    profile.write_text(pi_sandbox_profile(REPO, venv_py.parent.parent))
+    cmd = pi_command(arm, prompt, model, provider, thinking, skills_dir, profile)
+
+    # The output files must live OUTSIDE the repo, then be copied in.
+    #
+    # `results/runs/` sits inside the repo, which the sandbox denies reads on, and
+    # node fstats its own stdio during startup: handing it a stdout fd inside a
+    # denied subpath aborts the process with SIGABRT before it runs a single line.
+    # The failure gives no message, only a native stack trace, and looks exactly
+    # like a crashed CLI. Writing to scratch and archiving afterwards keeps the full
+    # evidence in results/ without granting the agent read access to prior runs --
+    # which hold every earlier arm's produced solutions.
+    stream = scratch / "stream.jsonl"
+    stderr_path = scratch / "stderr.log"
+    timed_out = False
+    err: str | None = None
+    with open(stream, "w") as fh, open(stderr_path, "w") as eh:
+        try:
+            proc = subprocess.run(
+                cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=fh,
+                stderr=eh,
+                timeout=timeout,
+                cwd=task_dir,
+            )
+            rc = proc.returncode
+        except subprocess.TimeoutExpired:
+            timed_out, rc = True, -1
+
+    for src in (stream, stderr_path):
+        if src.is_file():
+            shutil.copy2(src, out_dir / src.name)
+    shutil.copy2(profile, out_dir / "sandbox.sb")
+
+    if rc not in (0, -1):
+        err = stderr_path.read_text()[-500:]
+
+    metrics, rate_limited = parse_pi(stream, f"{KIT_PREFIX}:")
+    return metrics, timed_out, rate_limited, err
 
 
 def run_claude(
@@ -293,6 +406,8 @@ def run_trial(
     facts: Path | None = None,
     model: str,
     effort: str = "medium",
+    provider: str = "opencode-go",
+    thinking: str = "medium",
     venv_py: Path = DEFAULT_VENV_PY,
     max_usd: float = 5.0,
     web_search: bool = True,
@@ -320,6 +435,19 @@ def run_trial(
         metrics, timed_out, rate_limited, err = run_codex(
             arm, prompt, task_dir, out_dir, model, effort, timeout, scratch, web_search
         )
+    elif harness == "pi":
+        metrics, timed_out, rate_limited, err = run_pi(
+            arm,
+            prompt,
+            task_dir,
+            out_dir,
+            model,
+            provider,
+            thinking,
+            timeout,
+            scratch,
+            venv_py,
+        )
     elif harness == "claude":
         metrics, timed_out, rate_limited, err = run_claude(
             arm, prompt, task_dir, out_dir, model, timeout, max_usd
@@ -329,6 +457,7 @@ def run_trial(
     wall = time.perf_counter() - t0
 
     graded, tp, tt = grade(test_file, task_dir, out_dir, venv_py)
+    offenders = audit_contamination(out_dir)
 
     # Archive what the agent actually produced.
     produced = out_dir / "produced"
@@ -357,6 +486,7 @@ def run_trial(
         metrics=metrics.as_dict(),
         rate_limited=rate_limited,
         error=err,
+        contamination=offenders,
     )
     (out_dir / "result.json").write_text(json.dumps(result.as_dict(), indent=2))
 
@@ -370,11 +500,13 @@ def run_trial(
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--task", required=True)
-    ap.add_argument("--harness", default="codex", choices=("codex", "claude"))
+    ap.add_argument("--harness", default="codex", choices=("codex", "claude", "pi"))
     ap.add_argument("--arm", default="A", choices=("A", "B", "C", "D", "E"))
     ap.add_argument("--repeat", type=int, default=0)
     ap.add_argument("--model", default="gpt-5.6-terra")
     ap.add_argument("--effort", default="medium")
+    ap.add_argument("--provider", default="opencode-go")
+    ap.add_argument("--thinking", default="medium")
     ap.add_argument("--no-web-search", action="store_true")
     ap.add_argument("--kit", type=Path, default=REPO)
     ap.add_argument("--placebo", type=Path, default=REPO / "benchmark" / "placebo-kit")

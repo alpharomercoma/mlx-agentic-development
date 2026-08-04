@@ -66,9 +66,11 @@ def main() -> int:
     ap.add_argument("--arms", nargs="+", default=["A", "B", "C", "D", "E"])
     ap.add_argument("--search", nargs="+", default=["on"], choices=["on", "off"])
     ap.add_argument("--repeats", type=int, default=5)
-    ap.add_argument("--harness", default="codex", choices=["codex", "claude"])
+    ap.add_argument("--harness", default="codex", choices=["codex", "claude", "pi"])
     ap.add_argument("--model", default="gpt-5.6-terra")
     ap.add_argument("--effort", default="medium")
+    ap.add_argument("--provider", default="opencode-go")
+    ap.add_argument("--thinking", default="medium")
     ap.add_argument("--seed", type=int, default=20260804)
     ap.add_argument("--kit", type=Path, default=REPO)
     ap.add_argument("--placebo", type=Path, default=REPO / "benchmark" / "placebo-kit")
@@ -137,6 +139,8 @@ def main() -> int:
                 results_root=RESULTS,
                 model=args.model,
                 effort=args.effort,
+                provider=args.provider,
+                thinking=args.thinking,
                 web_search=c["web_search"],
             )
         except Exception as exc:  # noqa: BLE001 - a failed cell must not kill the sweep

@@ -166,6 +166,73 @@ def parse_codex(events_path: Path, codex_home: Path, kit_prefix: str) -> RunMetr
     return m
 
 
+def parse_pi(stream_path: Path, kit_prefix: str) -> tuple[RunMetrics, bool]:
+    """Parse a pi --mode json event stream.
+
+    Returns (metrics, rate_limited).
+
+    The one schema fact that matters: **usage is per model call, not cumulative.**
+    Each `message_end` carries the usage for that assistant message alone, and
+    `turn_end` re-emits the usage of the message that ended the turn. Summing both
+    would double-count every turn, and reading only the last would report a
+    two-call run as its cheaper second call. Verified by execution against pi
+    0.83.0 on 2026-08-04: a two-call run emitted 1,724 then 1,758 total tokens,
+    with `turn_end` mirroring each.
+
+    So model-call usage is summed over `message_end`, and `turn_end` is used only
+    to count turns. Messages carrying no usage (tool-result echoes) are skipped.
+
+    Skill detection anchors on `tool_execution_start.args` rather than on the whole
+    stream. A skill body that cites a sibling skill's path would otherwise arrive in
+    a read tool's *result* and be scored as an invocation that never happened.
+
+    Caution: pi's token accounting is not comparable to Codex's or Claude's. Compare
+    within a harness only.
+    """
+    m = RunMetrics()
+    rate_limited = False
+    cost = 0.0
+    saw_cost = False
+
+    for d in _iter_json_lines(stream_path):
+        dtype = d.get("type")
+
+        if dtype == "message_end":
+            usage = (d.get("message") or {}).get("usage") or {}
+            if not usage:
+                continue
+            m.model_calls += 1
+            m.input_tokens += usage.get("input", 0) or 0
+            m.cached_input_tokens += usage.get("cacheRead", 0) or 0
+            m.cache_write_tokens += usage.get("cacheWrite", 0) or 0
+            m.output_tokens += usage.get("output", 0) or 0
+            m.reasoning_tokens += usage.get("reasoning", 0) or 0
+            m.total_tokens += usage.get("totalTokens", 0) or 0
+            total = (usage.get("cost") or {}).get("total")
+            if total is not None:
+                cost += total
+                saw_cost = True
+
+        elif dtype == "turn_end":
+            m.turns += 1
+
+        elif dtype == "tool_execution_start":
+            m.tool_calls += 1
+            _collect_kit_skills(
+                json.dumps(d.get("args") or {}), kit_prefix, m.skills_invoked
+            )
+
+        elif dtype == "agent_end":
+            # willRetry marks a provider-side stall the agent intends to retry;
+            # a run that ends still wanting to retry did not finish cleanly.
+            if d.get("willRetry"):
+                rate_limited = True
+
+    if saw_cost:
+        m.cost_usd = cost
+    return m, rate_limited
+
+
 def parse_claude(stream_path: Path, kit_prefix: str) -> tuple[RunMetrics, bool]:
     """Parse a Claude Code --output-format stream-json JSONL file.
 

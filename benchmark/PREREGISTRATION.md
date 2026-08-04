@@ -285,3 +285,89 @@ them silently inflated arm A's sample by mixing two different experiments.
 
 **No scored data survives into the final analysis.** The sweep restarts from zero
 against the repaired kit and five arms.
+
+---
+
+# Amendment 3 — 2026-08-04, second harness is pi + deepseek-v4-flash
+
+Recorded **before any scored pi run was analysed**. The pilot runs referenced below
+(`p05`, repeats 90–95) were diagnostic: they exposed a harness defect, were used to
+fix it, and are excluded from analysis.
+
+## Why the replication harness changed
+
+The pre-registered second harness was Claude Code. It is replaced by **pi 0.83.0
+driving `opencode-go/deepseek-v4-flash`**, because credits are available there and
+the Claude quota is not. This is a change of convenience, and it is declared as one.
+
+The substitution is not cosmetic. It changes three things at once — harness, model,
+and web-search availability — so **no pi-vs-Codex difference can be attributed to any
+one of them.** The pi condition is a *conceptual* replication: it asks whether the
+C−E null reappears under a different agent and a different model, not whether the
+numbers match.
+
+## pi has no web-search tool, so this is the search-off condition
+
+pi ships `bash`, `read`, `write`, `edit`, `grep`, `ls`, `find` and nothing else.
+Prediction 4 — "with web search off, the correctness gap should widen in the kit's
+favour" — therefore gets tested here rather than in the quota-blocked Codex cell.
+
+The agent retains `bash`, so it *could* fetch the network with curl. That is measured
+per run rather than assumed away.
+
+## Arm delivery, and the sandbox that had to be added
+
+pi injects skills exactly as Codex does: a name/description/location catalog in the
+system prompt, with the body loaded on demand via the read tool
+(`core/skills.js::formatSkillsForPrompt`). `--no-skills` suppresses *discovery* only,
+so explicitly passed `--skill` paths still load and no unrelated skill on the machine
+can reach any arm. Measured injected prompt, all five arms, identical probe:
+
+| Arm | Content | Prompt tokens | Over bare |
+|---|---|---|---|
+| A | bare | 1,606 | — |
+| B | placebo | 3,219 | +1,613 |
+| C | kit | 3,383 | +1,777 |
+| D | raw docs | 1,878 | +272 |
+| E | bare facts | 1,877 | +271 |
+
+D and E are **1 token apart**, so D−E remains the clean content contrast it was in
+the Codex run.
+
+**A sandbox was added, and without it the pi arms would have been worthless.** Codex
+runs under `--sandbox workspace-write`; pi has no sandbox and its bash tool inherits
+the user's full permissions. The first pi pilot's *bare* arm listed the repository,
+read `run.py`, read the docs-kit, read the hidden grader `test_solution.py`, and ran
+pytest against the real grader before reporting 9/9. Arm C, holding the kit, never
+went looking. A control that cheats while the treatment does not is the one asymmetry
+that moves a result in either direction while looking normal in the logs.
+
+Every pi arm now runs under a macOS seatbelt profile denying reads of the repository
+subtree (`arms.py::pi_sandbox_profile`), archived per run as `sandbox.sb`. Two further
+consequences, both recorded because they are easy to get silently wrong:
+
+- pi's stdout must be written outside the repo and copied in afterwards. node fstats
+  its stdio at startup, so a stdout fd inside a denied subpath aborts the process
+  with SIGABRT and no error message — indistinguishable from a crashed CLI.
+- `audit_contamination()` now runs on **every** trial, for both harnesses, and its
+  result is stored in `result.json`. Re-run retroactively over the completed Codex
+  sweep: **0 of 260 runs** touched the repo, grader, or oracle, so the published
+  Codex result stands.
+
+## What is being tested
+
+Same five arms, same 10 tasks, same estimators, same clustered/bootstrap/permutation
+analysis. The confirmatory contrast remains **C−E** (structure held against the same
+facts), with D−E as the clean secondary.
+
+## Predictions for the pi condition, recorded before analysis
+
+6. **C−E remains null.** If structure bought nothing under Codex with search, it
+   should buy nothing under a weaker model without search either.
+7. **C−A and C−E both favour the content arms more than under Codex**, because
+   search-off removes the substitute for being told. This is prediction 4 relocated.
+8. **Absolute pass rates fall** versus `gpt-5.6-terra`; deepseek-v4-flash is a
+   smaller model working without documentation access.
+9. **Token counts are not comparable across harnesses** and no cross-harness token
+   contrast will be reported. pi bills per model call and reports cache reads
+   separately; only within-harness contrasts are interpretable.
