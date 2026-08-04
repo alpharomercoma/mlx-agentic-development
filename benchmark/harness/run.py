@@ -590,6 +590,20 @@ def run_trial(
     out_dir.mkdir(parents=True)
 
     scratch = WORKSPACE_ROOT / run_id
+
+    # Purge every OTHER run's workspace first. A trial deletes its own scratch only
+    # on normal completion, so an interrupted sweep leaves finished workspaces --
+    # each containing a working solution.py -- sitting beside the next run. That is
+    # how incident 5 happened: arm E of p05 read arm C's solution out of a workspace
+    # left behind when the deepseek sweep was killed mid-cell. preflight_clean
+    # deliberately skips this tree, because live runs legitimately contain a
+    # solution.py, so the invariant has to be enforced here instead: at most one
+    # workspace exists at any moment.
+    if WORKSPACE_ROOT.is_dir():
+        for stale in WORKSPACE_ROOT.iterdir():
+            if stale.is_dir() and stale != scratch:
+                shutil.rmtree(stale, ignore_errors=True)
+
     if scratch.exists():
         shutil.rmtree(scratch)
     scratch.mkdir(parents=True)

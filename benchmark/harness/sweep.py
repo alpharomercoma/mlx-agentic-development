@@ -117,7 +117,10 @@ def main() -> int:
                 prev = json.loads(done_file.read_text())
             except json.JSONDecodeError:
                 prev = {}
-            if not prev.get("error"):
+            # Contaminated cells are re-run too. They are dropped from the analysis,
+            # so treating them as done would leave the same permanent hole an
+            # errored cell used to leave.
+            if not prev.get("error") and not prev.get("contamination"):
                 continue
         todo.append(c)
 
