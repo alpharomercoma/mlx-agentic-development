@@ -48,15 +48,24 @@ N_PERM = 10_000
 # --------------------------------------------------------------------------- io
 
 
-def load_runs(results: Path) -> list[dict]:
+def load_runs(results: Path, harness: str | None = None) -> list[dict]:
     """Scored sweep runs only.
 
     Mining runs live in the same directory but are baseline exploration, not scored
     cells: they predate the web_search field, so a run without that key is a mining
     run and is excluded. Including them silently inflated arm A's sample and mixed
     two different experiments.
+
+    Runs are also filtered by harness. Token accounting is not comparable across
+    CLIs -- Codex reports a large raw input_tokens where pi and Claude report almost
+    everything as cache reads -- so pooling them would produce a token contrast that
+    is mostly an artifact of which CLI ran the cell.
+
+    Contaminated runs are dropped, not merely flagged. A run whose agent reached the
+    repo, the grader or an oracle is evidence about the harness, not about the kit.
     """
     runs = []
+    dropped = 0
     for rj in sorted((results / "runs").glob("*/result.json")):
         try:
             d = json.loads(rj.read_text())
@@ -64,12 +73,19 @@ def load_runs(results: Path) -> list[dict]:
             continue
         if "web_search" not in d:
             continue
+        if harness and d.get("harness") != harness:
+            continue
+        if d.get("contamination"):
+            dropped += 1
+            continue
         # Recomputed, not trusted: an earlier version keyed `graded` on the pytest
         # exit code, so it read False for every run with a failing test. Deriving it
         # from tests_total makes runs recorded before and after that fix consistent
         # without re-running anything.
         d["graded"] = d.get("tests_total", 0) > 0
         runs.append(d)
+    if dropped:
+        print(f"NOTE: dropped {dropped} contaminated run(s) from the analysis")
     return runs
 
 
@@ -229,9 +245,15 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--results", type=Path, default=RESULTS)
     ap.add_argument("--search", default="on", choices=["on", "off"])
+    ap.add_argument(
+        "--harness",
+        default="codex",
+        choices=["codex", "claude", "pi"],
+        help="token metrics are not comparable across harnesses; analyse one at a time",
+    )
     args = ap.parse_args()
 
-    runs = load_runs(args.results)
+    runs = load_runs(args.results, args.harness)
     if not runs:
         print("no runs found")
         return 1

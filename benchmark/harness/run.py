@@ -282,15 +282,28 @@ def run_pi(
         except subprocess.TimeoutExpired:
             timed_out, rc = True, -1
 
-    for src in (stream, stderr_path):
-        if src.is_file():
-            shutil.copy2(src, out_dir / src.name)
+    # Archive a filtered stream. `--mode json` emits a message_update event per
+    # token delta: one bare-arm run produced 166 MB, of which 99.8% was
+    # message_update and 16,761 of 16,972 events. At 250 runs that is tens of
+    # gigabytes to store and re-parse for no gain, since none of the retained
+    # metrics read those events. The dropped types carry only partial, superseded
+    # copies of content that arrives complete in message_end.
+    archived = out_dir / "stream.jsonl"
+    kept = 0
+    with open(archived, "w") as out:
+        for line in stream.read_text(errors="replace").splitlines():
+            if '"message_update"' in line or '"tool_execution_update"' in line:
+                continue
+            out.write(line + "\n")
+            kept += 1
+    if stderr_path.is_file():
+        shutil.copy2(stderr_path, out_dir / "stderr.log")
     shutil.copy2(profile, out_dir / "sandbox.sb")
 
     if rc not in (0, -1):
         err = stderr_path.read_text()[-500:]
 
-    metrics, rate_limited = parse_pi(stream, f"{KIT_PREFIX}:")
+    metrics, rate_limited = parse_pi(archived, f"{KIT_PREFIX}:")
     return metrics, timed_out, rate_limited, err
 
 
