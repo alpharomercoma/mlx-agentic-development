@@ -269,7 +269,7 @@ def prepare_pi_skills(arm: Arm, root: Path) -> Path | None:
     return dest
 
 
-def pi_sandbox_profile(repo: Path, venv: Path) -> str:
+def pi_sandbox_profile(repo: Path, venv: Path, scratch: Path | None = None) -> str:
     """A macOS seatbelt profile that hides the benchmark repo from the agent.
 
     This is not optional hardening; without it the pi arms are uninterpretable.
@@ -290,15 +290,28 @@ def pi_sandbox_profile(repo: Path, venv: Path) -> str:
     and its own venv; enumerating that surface is fragile, whereas the thing that
     must never be readable is exactly one subtree. The venv is re-allowed because it
     sits under the same parent as the repo.
+
+    Denying /private/tmp is the second half, and it closes a whole class at once.
+    Agents write scratch solutions there -- five `solution.py` files turned up under
+    /private/tmp/{c08,c10,o08,o09,o10}, written by one run and read by a later one --
+    and it is also where stray kit copies accumulate: two placebo-arm runs read the
+    real MLX kit out of a `gatedbg/skills/` directory left by this harness's own
+    debugging. Name- and content-based scanning cannot keep up with either, because
+    both appear *during* a sweep and at arbitrary depth. Removing read access to the
+    whole tree, except the run's own scratch, ends the category.
+
+    /tmp is a symlink to /private/tmp on macOS, so one subpath rule covers both.
     """
-    return "\n".join(
-        [
-            "(version 1)",
-            "(allow default)",
-            f'(deny file-read* (subpath "{repo.resolve()}"))',
-            f'(allow file-read* (subpath "{venv.resolve()}"))',
-        ]
-    )
+    lines = [
+        "(version 1)",
+        "(allow default)",
+        f'(deny file-read* (subpath "{repo.resolve()}"))',
+        f'(allow file-read* (subpath "{venv.resolve()}"))',
+        '(deny file-read* (subpath "/private/tmp"))',
+    ]
+    if scratch is not None:
+        lines.append(f'(allow file-read* (subpath "{scratch.resolve()}"))')
+    return "\n".join(lines)
 
 
 def pi_command(

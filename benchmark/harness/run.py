@@ -375,7 +375,7 @@ def run_pi(
     # first pilot's bare arm read the hidden grader and ran it. Written per run so
     # the profile is archived with the evidence rather than assumed.
     profile = scratch / "sandbox.sb"
-    profile.write_text(pi_sandbox_profile(REPO, venv_py.parent.parent))
+    profile.write_text(pi_sandbox_profile(REPO, venv_py.parent.parent, scratch))
     cmd = pi_command(arm, prompt, model, provider, thinking, skills_dir, profile)
 
     # The output files must live OUTSIDE the repo, then be copied in.
