@@ -84,6 +84,8 @@ class TrialResult:
     # Tool invocations that reached outside the workspace. Must be empty; a
     # non-empty list means the run is evidence about the harness, not the kit.
     contamination: list = None
+    # Tool calls that reached the network. Reported, never grounds for exclusion.
+    network: list = None
 
     def as_dict(self) -> dict:
         d = self.__dict__.copy()
@@ -176,6 +178,42 @@ def audit_contamination(out_dir: Path) -> list[str]:
                     offenders.append(f"{ev.get('toolName')}: {m}")
                     break
     return offenders
+
+
+def audit_network(out_dir: Path) -> list[str]:
+    """Tool calls that reached the network. Reported, never grounds for exclusion.
+
+    pi ships no web-search tool, which is what makes it the search-off condition,
+    but it does ship bash, so the agent can still fetch documentation by hand. An
+    arm that curls the MLX docs is not running without documentation access and the
+    search-off claim would be false for that run.
+
+    This is kept separate from `contamination` on purpose: contaminated runs are
+    dropped, and dropping every run that touched the network would delete exactly
+    the runs where the model worked hardest, biasing the sample toward easy cells.
+    It is a caveat to report, not invalid data.
+    """
+    hits: list[str] = []
+    for stream_name in ("stream.jsonl", "events.jsonl"):
+        stream = out_dir / stream_name
+        if not stream.is_file():
+            continue
+        for line in stream.read_text(errors="replace").splitlines():
+            line = line.strip()
+            if not line.startswith("{"):
+                continue
+            try:
+                ev = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if ev.get("type") != "tool_execution_start":
+                continue
+            blob = json.dumps(ev.get("args") or {})
+            for m in net:
+                if m in blob:
+                    hits.append(m.strip())
+                    break
+    return hits
 
 
 def prepare_workspace(src: Path, dest: Path) -> None:
@@ -471,6 +509,7 @@ def run_trial(
 
     graded, tp, tt = grade(test_file, task_dir, out_dir, venv_py)
     offenders = audit_contamination(out_dir)
+    net_hits = audit_network(out_dir)
 
     # Archive what the agent actually produced.
     produced = out_dir / "produced"
@@ -500,6 +539,7 @@ def run_trial(
         rate_limited=rate_limited,
         error=err,
         contamination=offenders,
+        network=net_hits,
     )
     (out_dir / "result.json").write_text(json.dumps(result.as_dict(), indent=2))
 
