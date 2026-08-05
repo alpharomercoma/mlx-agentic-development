@@ -1,0 +1,4 @@
+(version 1)
+(allow default)
+(deny file-read* (subpath "/Users/alpha/asic/mlx-agentic-development"))
+(allow file-read* (subpath "/Users/alpha/asic/.venv-mlx"))

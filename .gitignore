@@ -5,3 +5,8 @@ __pycache__/
 benchmark/results/runs/
 benchmark/results/*.sqlite
 *.gputrace/
+
+# Raw pi event streams are filtered before archiving (message_update is ~99.8% of
+# bytes; one unfiltered run was 181 MB, over GitHub's 100 MB limit). Belt and
+# braces in case an unfiltered stream ever lands here.
+benchmark/results*/**/stream.raw.jsonl

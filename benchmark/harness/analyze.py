@@ -409,8 +409,14 @@ def main() -> int:
             continue
         inp = sum(r["metrics"]["input_tokens"] for r in rs)
         cac = sum(r["metrics"]["cached_input_tokens"] for r in rs)
-        frac = cac / inp if inp else 0.0
-        print(f"  arm {a}: {frac:6.1%} of input tokens served from cache")
+        # The denominator differs by harness. Codex reports input_tokens INCLUSIVE
+        # of cached tokens, so the share is cached/input. pi reports `input` and
+        # `cacheRead` as disjoint fields, so the same formula gives nonsense --
+        # it printed 131,102% before this was fixed. Total prompt is the sum there.
+        harnesses = {r.get("harness") for r in rs}
+        denom = inp if harnesses == {"codex"} else inp + cac
+        frac = cac / denom if denom else 0.0
+        print(f"  arm {a}: {frac:6.1%} of prompt tokens served from cache")
 
     print("\nPASS@K / PASS^K (arm C)")
     for t in tasks:

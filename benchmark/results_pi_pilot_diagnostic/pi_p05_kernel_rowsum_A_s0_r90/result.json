@@ -1,0 +1,33 @@
+{
+  "task_id": "p05_kernel_rowsum",
+  "harness": "pi",
+  "arm": "A",
+  "repeat": 90,
+  "model": "deepseek-v4-flash",
+  "web_search": false,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 9,
+  "tests_total": 9,
+  "wall_clock_s": 218.65,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 57023,
+    "cached_input_tokens": 810624,
+    "cache_write_tokens": 0,
+    "output_tokens": 21346,
+    "reasoning_tokens": 11415,
+    "total_tokens": 888993,
+    "model_calls": 31,
+    "turns": 31,
+    "tool_calls": 38,
+    "cost_usd": 0.016229847199999998,
+    "skills_invoked": [
+      "mlx-docs"
+    ]
+  },
+  "rate_limited": false,
+  "error": null
+}

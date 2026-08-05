@@ -1,0 +1,43 @@
+{
+  "task_id": "p05_kernel_rowsum",
+  "harness": "pi",
+  "arm": "A",
+  "repeat": 80,
+  "model": "deepseek-v4-flash",
+  "web_search": false,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 9,
+  "tests_total": 9,
+  "wall_clock_s": 205.65,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 32392,
+    "cached_input_tokens": 365184,
+    "cache_write_tokens": 0,
+    "output_tokens": 14303,
+    "reasoning_tokens": 6980,
+    "total_tokens": 411879,
+    "model_calls": 34,
+    "turns": 34,
+    "tool_calls": 37,
+    "cost_usd": 0.0095622352,
+    "skills_invoked": [
+      "mlx-metal-kernels"
+    ]
+  },
+  "rate_limited": false,
+  "error": null,
+  "contamination": [
+    "write: solution.py",
+    "write: test_solution",
+    "bash: test_solution",
+    "bash: test_solution",
+    "edit: test_solution",
+    "bash: test_solution",
+    "bash: test_solution",
+    "read: solution.py"
+  ]
+}

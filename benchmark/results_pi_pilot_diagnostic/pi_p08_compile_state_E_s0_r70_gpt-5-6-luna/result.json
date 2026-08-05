@@ -1,0 +1,36 @@
+{
+  "task_id": "p08_compile_state",
+  "harness": "pi",
+  "arm": "E",
+  "repeat": 70,
+  "model": "gpt-5.6-luna",
+  "web_search": false,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 4,
+  "tests_total": 4,
+  "wall_clock_s": 48.78,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 36,
+    "cached_input_tokens": 44626,
+    "cache_write_tokens": 6734,
+    "output_tokens": 2352,
+    "reasoning_tokens": 1082,
+    "total_tokens": 53748,
+    "model_calls": 12,
+    "turns": 12,
+    "tool_calls": 11,
+    "cost_usd": 0.00270281,
+    "provider_error": false,
+    "skills_invoked": [
+      "mlx-facts"
+    ]
+  },
+  "rate_limited": false,
+  "error": null,
+  "contamination": [],
+  "network": []
+}

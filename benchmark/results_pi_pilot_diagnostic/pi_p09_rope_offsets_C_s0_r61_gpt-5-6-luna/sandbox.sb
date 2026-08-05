@@ -1,0 +1,6 @@
+(version 1)
+(allow default)
+(deny file-read* (subpath "/Users/alpha/asic/mlx-agentic-development"))
+(allow file-read* (subpath "/Users/alpha/asic/.venv-mlx"))
+(deny file-read* (subpath "/private/tmp"))
+(allow file-read* (subpath "/private/tmp/mlx-bench/workspaces/pi_p09_rope_offsets_C_s0_r61_gpt-5-6-luna"))

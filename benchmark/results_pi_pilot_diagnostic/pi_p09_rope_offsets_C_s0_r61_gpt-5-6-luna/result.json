@@ -1,0 +1,36 @@
+{
+  "task_id": "p09_rope_offsets",
+  "harness": "pi",
+  "arm": "C",
+  "repeat": 61,
+  "model": "gpt-5.6-luna",
+  "web_search": false,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 3,
+  "tests_total": 3,
+  "wall_clock_s": 59.63,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 39,
+    "cached_input_tokens": 70836,
+    "cache_write_tokens": 7861,
+    "output_tokens": 1837,
+    "reasoning_tokens": 514,
+    "total_tokens": 80573,
+    "model_calls": 13,
+    "turns": 13,
+    "tool_calls": 15,
+    "cost_usd": 0.002797085,
+    "provider_error": false,
+    "skills_invoked": [
+      "mlx-performance"
+    ]
+  },
+  "rate_limited": false,
+  "error": null,
+  "contamination": [],
+  "network": []
+}

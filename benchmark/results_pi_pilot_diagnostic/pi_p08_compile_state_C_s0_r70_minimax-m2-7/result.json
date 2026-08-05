@@ -1,0 +1,37 @@
+{
+  "task_id": "p08_compile_state",
+  "harness": "pi",
+  "arm": "C",
+  "repeat": 70,
+  "model": "minimax-m2.7",
+  "web_search": false,
+  "ok": true,
+  "timed_out": false,
+  "graded": true,
+  "passed": true,
+  "tests_passed": 4,
+  "tests_total": 4,
+  "wall_clock_s": 82.19,
+  "speedup": null,
+  "metrics": {
+    "input_tokens": 3392,
+    "cached_input_tokens": 35056,
+    "cache_write_tokens": 0,
+    "output_tokens": 3884,
+    "reasoning_tokens": 0,
+    "total_tokens": 42332,
+    "model_calls": 12,
+    "turns": 12,
+    "tool_calls": 11,
+    "cost_usd": 0.0077817599999999995,
+    "provider_error": false,
+    "skills_invoked": [
+      "mlx-core-semantics",
+      "mlx-compile-and-transforms"
+    ]
+  },
+  "rate_limited": false,
+  "error": null,
+  "contamination": [],
+  "network": []
+}

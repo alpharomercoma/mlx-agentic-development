@@ -256,7 +256,11 @@ def _paths_in(args: dict) -> list[str]:
             continue
         out.append(value)
     text = " ".join(out)
-    return _re.findall(r"/[A-Za-z0-9_./\-]{4,}", text)
+    # The lookbehind matters. Without it, `./solution.py` -- the agent writing its
+    # own answer file in its own workspace, which is the task -- yields the token
+    # `/solution.py`, which is not under the workspace prefix and so was flagged as
+    # contamination. Only genuinely absolute paths count.
+    return _re.findall(r"(?<![\w.])/[A-Za-z0-9_./\-]{4,}", text)
 
 
 def audit_network(out_dir: Path) -> list[str]:

@@ -151,3 +151,135 @@ re-derive their numbers on the user's machine instead of decaying with each 2.5-
 MLX release, and the **harness** — arm isolation via `CODEX_HOME`, byte-identical
 flags, the three contamination guards, and a pre-registered analysis — which would
 measure any skill kit and will outlive MLX 0.32.0.
+
+---
+
+# Replication: pi 0.83.0 + `gpt-5.6-luna`, web search OFF
+
+**250 runs. 10 tasks × 5 arms × 5 repeats. 16,761,473 tokens, $0.76. 2026-08-05.**
+Analysed exactly as pre-registered, per Amendment 3, committed before these runs.
+
+This is a *conceptual* replication: harness, model and search availability all change
+at once, so **no pi-vs-Codex difference is attributable to any single one of them.**
+Token counts are never compared across harnesses.
+
+## The C−E null replicates
+
+| Contrast | Effect | Clustered SE | Bootstrap 95% CI | Permutation p |
+|---|---|---|---|---|
+| C−A correctness | +0.06 | 0.052 | [0.00, +0.18] | 1.00 |
+| C−B correctness | +0.06 | 0.052 | [0.00, +0.18] | 1.00 |
+| **C−E tokens** | **+13,490** | 5,344 | [−4,881, +31,010] | **0.19** |
+| C−D tokens | −33,250 | 12,430 | [−61,780, −4,338] | 0.062 |
+| **D−E tokens** | **+46,740** | 12,630 | [+23,230, +71,670] | **0.0058** ✅ |
+| C−B tokens | −21 | 7,865 | [−16,890, +17,360] | 1.00 |
+| C−A tokens | +11,190 | 9,610 | [−5,356, +27,630] | 0.24 |
+
+**Prediction 6 confirmed.** The structured 8-skill kit again failed to beat the same
+facts as a flat cheat sheet — and this time it was 13,490 tokens *more* expensive,
+still inside noise. Two harnesses, two models, with and without documentation
+access: **the apparatus around a skill does not pay for itself.**
+
+## The one thing that is significant: curation, not structure
+
+**D−E = +46,740 tokens, p = 0.0058**, clearing the α = 0.025 head. Arm D is upstream
+MLX documentation concatenated; arm E is the same facts hand-reduced to 40 lines.
+Same information, ~9× the prose, and it costs nearly 50k more tokens per run. Arm D's
+median passing run is 93,963 tokens against arm E's 45,288, and its cost per success
+is the worst of all five arms at 104,870.
+
+So the two content contrasts point in opposite directions, and together they say
+something sharper than either alone:
+
+- **Cutting text down to the facts pays.** (D−E, significant)
+- **Wrapping those facts in skill machinery does not.** (C−E, null in both conditions)
+
+Also significant: **C−A model calls −1.8, p = 0.0080.** The kit reaches an answer in
+fewer round-trips than the bare model, even where it does not reach it in fewer tokens.
+
+## Correctness: null, but arm C is the only clean sweep
+
+| Arm | Passed | Median tokens (passing) | Cost per success |
+|---|---|---|---|
+| A bare | 47/50 | 44,061 | 57,595 |
+| B placebo | 47/50 | 49,454 | 69,520 |
+| **C kit** | **50/50** | 50,739 | 65,327 |
+| D raw docs | 47/50 | 93,963 | 104,870 |
+| **E bare facts** | 47/50 | 45,288 | **55,145** |
+
+Arm C is the only arm that passed every run, and `pass@3 = pass^3 = 1.000` on all ten
+tasks. It is **not significant** — McNemar b=1, c=0, p=1.00 — and it rests on a single
+task. Reporting it as "the kit makes the agent perfect" would be exactly the overclaim
+this experiment exists to avoid.
+
+Everything hinges on `p07_memory_api`, the only task anyone failed:
+
+| Task | A bare | B placebo | C kit | D docs | E facts |
+|---|---|---|---|---|---|
+| `p07_memory_api` | 2/5 | 2/5 | **5/5** | 2/5 | 3/5 |
+| `p10_bool_mask_assign` | 5/5 | 5/5 | 5/5 | 5/5 | 4/5 |
+| all eight others | 5/5 | 5/5 | 5/5 | 5/5 | 5/5 |
+
+`p07` is a naming task — which memory API actually exists in 0.32.0 — where guessing
+plausibly is worse than knowing. Arm C got it right 5/5; the flat facts sheet managed
+3/5; everything else 2/5. One task cannot carry a claim, but it is the same shape as
+the Codex condition's `p05`: **content decides the cases where the answer cannot be
+derived, only recalled.**
+
+## Two pre-registered predictions were wrong
+
+**Prediction 7 — that removing search would favour the content arms — is contradicted.**
+Arm C spent *more* tokens than bare (+11,190), and bare beat the kit on cost per
+success (57,595 vs 65,327). Turning search off did not make the kit pay.
+
+**Prediction 8 — that pass rates would fall on a smaller model — is contradicted.**
+They rose: bare went 40/50 → 47/50 and the kit 45/50 → 50/50 versus `gpt-5.6-terra`.
+`gpt-5.6-luna` without documentation outperformed `gpt-5.6-terra` with it on this task
+set, which mostly says these ten tasks are easier than the design assumed.
+
+## Validity
+
+| Check | Result |
+|---|---|
+| Contamination | **0 of 250** |
+| Mechanism: content loaded | C 50/50, D 50/50, E 50/50, **A 0/50, B 0/50** |
+| Cells per arm | 50 / 50 / 50 / 50 / 50, every cell exactly 5 repeats |
+| Provider errors / timeouts | 0 / 0 |
+| Cache share of prompt | 99.9–100.0%, uniform across arms |
+| Network use | **2 of 50 arm-A runs** used `curl` |
+
+Two caveats the table understates:
+
+- **"Search off" is not absolute.** Two bare runs of `p07` fetched MLX source from
+  raw.githubusercontent.com. pi has no web-search tool but does have bash, which is
+  why Amendment 3 said to measure this rather than assume it. Both were arm A — the
+  arm with the least information — and `p07` is the task it was failing.
+- **Arm B never loaded its placebo (0/50).** It pays the +1,613-token catalog cost and
+  then ignores the content, having correctly judged eight PostgreSQL skills irrelevant.
+  So C−B here measures prompt length, not content, which is what makes C−E the load-
+  bearing contrast.
+
+**Six contamination incidents were found and fixed before this dataset existed**, four
+of them during this condition alone: an unsandboxed CLI whose bare arm read the hidden
+grader and ran pytest against it; the author's own debug kit copies in `$TMPDIR` and
+in `/private/tmp`, which two *placebo* runs read the real kit from; agent-written
+`solution.py` files in `/private/tmp` read by later runs; and a sibling workspace left
+by an interrupted sweep, which arm E read arm C's solution out of.
+
+Each was caught by a check rather than by luck, and the fixes are structural rather
+than janitorial — the sandbox now denies the repository and all of `/private/tmp`
+except the run's own scratch, and at most one workspace exists at any moment. On this
+machine, anything readable and answer-bearing is eventually found by an agent.
+
+## What the two conditions say together
+
+`RESULTS.md` opened with a null and closes with a sharper version of it.
+
+Across **500 scored runs**, two harnesses, two models, and search both on and off, the
+skill *format* never paid for itself: C−E was −3,582 (p=0.69) with search and +13,490
+(p=0.19) without. The only significant content effect runs the other way — **raw
+documentation costs 46,740 more tokens than the same facts written down plainly**.
+
+The kit does buy something real and small: fewer model calls (−1.8, p=0.008), and the
+only clean sweep on correctness. What it does not buy is the thing its structure is
+for. The durable artifacts remain the probe scripts and the harness.
